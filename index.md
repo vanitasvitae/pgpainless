@@ -9,6 +9,9 @@ PGPainless was created [during a Google Summer of Code project](https://vanitasv
 
 One main focus of the project is ease of use. Using Bouncycastle can be a hassle, since simple tasks require a substantial amount of boilerplate code and small mistakes are easily made. PGPainless aims at providing a simple interface to get the job done quickly, while not trading away functionality.
 
+For examples about how to use the API, see the projects 
+[readme](https://github.com/pgpainless/pgpainless/blob/master/README.md).
+
 ### Android Support
 PGPainless is designed to work on Android versions down to [API level 9](https://developer.android.com/about/versions/android-2.3) (Gingerbread). This makes PGPainless a good choice for implementing OpenPGP encryption in your Android app.
 
@@ -22,7 +25,7 @@ Maven:
 <dependency>
     <groupId>org.pgpainless</groupId>
     <artifactId>pgpainless-core</artifactId>
-    <version>0.0.1-alpha2</version>
+    <version>0.0.1-alpha3</version>
 </dependency>
 ```
 
@@ -33,7 +36,7 @@ repositories {
 }
 
 dependencies {
-	compile 'org.pgpainless:pgpainless-core:0.0.1-alpha2'
+	compile 'org.pgpainless:pgpainless-core:0.0.1-alpha3'
 }
 ```
 
