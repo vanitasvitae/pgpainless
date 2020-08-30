@@ -33,7 +33,7 @@ Maven:
 <dependency>
     <groupId>org.pgpainless</groupId>
     <artifactId>pgpainless-core</artifactId>
-    <version>0.0.1-alpha7</version>
+    <version>0.1.0</version>
 </dependency>
 ```
 
@@ -44,7 +44,7 @@ repositories {
 }
 
 dependencies {
-	compile 'org.pgpainless:pgpainless-core:0.0.1-alpha7'
+	compile 'org.pgpainless:pgpainless-core:0.1.0'
 }
 ```
 
@@ -61,7 +61,7 @@ Contributions are always welcome :) The project is developed in the following pl
 Pull requests are accepted on either of them.
 
 ### Bug Reports
-PGPainless is in a *very* early state of development and the likelihood of bugs is quite high.
+PGPainless is in early state of development and the likelihood of bugs is quite high.
 If you encounter a bug, please make sure to check, whether the bug has already been reported
 either [here](https://github.com/pgpainless/pgpainless/issues),
 or [here](https://codeberg.org/PGPainless/pgpainless/issues), in order to avoid duplicate bug reports.
