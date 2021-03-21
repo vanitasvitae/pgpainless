@@ -42,6 +42,7 @@ import org.pgpainless.algorithm.SignatureType;
 import org.pgpainless.algorithm.SymmetricKeyAlgorithm;
 import org.pgpainless.exception.SecretKeyNotFoundException;
 import org.pgpainless.key.OpenPgpV4Fingerprint;
+import org.pgpainless.key.info.KeyRingInfo;
 import org.pgpainless.key.protection.SecretKeyRingProtector;
 import org.pgpainless.util.selection.key.PublicKeySelectionStrategy;
 import org.pgpainless.util.selection.key.SecretKeySelectionStrategy;
@@ -127,6 +128,11 @@ public class EncryptionBuilder implements EncryptionBuilderInterface {
         }
 
         @Override
+        public WithAlgorithms toRecipient(PGPPublicKeyRing keys, String userId) {
+            return new WithAlgorithmsImpl();
+        }
+
+        @Override
         public WithAlgorithms toRecipients(@Nonnull PGPPublicKeyRingCollection... keys) {
             if (keys.length != 0) {
                 List<PGPPublicKey> encryptionKeys = new ArrayList<>();
@@ -159,13 +165,18 @@ public class EncryptionBuilder implements EncryptionBuilderInterface {
             MultiMap<O, PGPPublicKeyRing> acceptedKeyRings = ringSelectionStrategy.selectKeyRingsFromCollections(keys);
             for (O identifier : acceptedKeyRings.keySet()) {
                 Set<PGPPublicKeyRing> acceptedSet = acceptedKeyRings.get(identifier);
+                if (acceptedSet.isEmpty()) {
+                    throw new IllegalArgumentException("No valid key found.");
+                }
+                WithAlgorithms api = null;
                 for (PGPPublicKeyRing ring : acceptedSet) {
-                    for (PGPPublicKey k : ring) {
-                        if (encryptionKeySelector().accept(k)) {
-                            EncryptionBuilder.this.encryptionKeys.add(k);
-                        }
+                    if (api == null) {
+                        api = toRecipients(ring);
+                    } else {
+                        api = api.and().toRecipients(ring);
                     }
                 }
+                return api;
             }
 
             if (EncryptionBuilder.this.encryptionKeys.isEmpty()) {

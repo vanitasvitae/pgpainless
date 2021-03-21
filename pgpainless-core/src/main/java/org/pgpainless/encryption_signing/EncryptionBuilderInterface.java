@@ -18,6 +18,7 @@ package org.pgpainless.encryption_signing;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 
 import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPPublicKey;
@@ -56,11 +57,14 @@ public interface EncryptionBuilderInterface {
          *
          * @param keys recipient keys for which the message will be encrypted.
          * @return api handle
+         * @deprecated use {@link #toRecipients(PGPPublicKeyRing...)} instead.
          */
+        @Deprecated
         WithAlgorithms toRecipients(@Nonnull PGPPublicKey... keys);
 
         /**
          * Pass in a list of trusted public key rings of the recipients.
+         * For each key ring, the message will be encrypted to the primary userId of that ring.
          *
          * @param keys recipient keys for which the message will be encrypted.
          * @return api handle
@@ -68,10 +72,20 @@ public interface EncryptionBuilderInterface {
         WithAlgorithms toRecipients(@Nonnull PGPPublicKeyRing... keys);
 
         /**
+         * Encrypt the message to the given key and userId.
+         *
+         * @param keys recipients key ring
+         * @param userId recipients userId
+         * @return api handle
+         */
+        WithAlgorithms toRecipient(PGPPublicKeyRing keys, String userId);
+
+        /**
          * Pass in a list of trusted public key ring collections of the recipients.
          *
          * @param keys recipient keys for which the message will be encrypted.
          * @return api handle
+         * @deprecated use {@link #toRecipient(PGPPublicKeyRing, String)} in combination with {@link WithAlgorithms#and()} instead.
          */
         WithAlgorithms toRecipients(@Nonnull PGPPublicKeyRingCollection... keys);
 
