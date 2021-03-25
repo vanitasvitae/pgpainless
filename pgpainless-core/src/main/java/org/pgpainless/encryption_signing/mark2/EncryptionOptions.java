@@ -17,11 +17,10 @@ package org.pgpainless.encryption_signing.mark2;
 
 import org.pgpainless.algorithm.CompressionAlgorithm;
 import org.pgpainless.algorithm.SymmetricKeyAlgorithm;
-import org.pgpainless.encryption_signing.EncryptionStream;
 
 public class EncryptionOptions {
 
-    private EncryptionStream.Purpose purpose = EncryptionStream.Purpose.STORAGE_AND_COMMUNICATIONS;
+    private EncryptionStream2.Purpose purpose = EncryptionStream2.Purpose.STORAGE_AND_COMMUNICATIONS;
     private boolean customEncryptionAlgorithm = false;
     private SymmetricKeyAlgorithm encryptionAlgorithm = null;
     private boolean customCompressionAlgorithm = false;
@@ -57,5 +56,17 @@ public class EncryptionOptions {
 
     public CompressionAlgorithm getCompressionAlgorithm() {
         return compressionAlgorithm;
+    }
+
+    public EncryptionOptions setPurpose(EncryptionStream2.Purpose purpose) {
+        if (purpose == null) {
+            throw new IllegalArgumentException("Purpose cannot be null.");
+        }
+        this.purpose = purpose;
+        return this;
+    }
+
+    public EncryptionStream2.Purpose getPurpose() {
+        return purpose;
     }
 }
