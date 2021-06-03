@@ -2,4 +2,5 @@ rootProject.name = 'PGPainless'
 
 include 'pgpainless-core',
         'pgpainless-sop'
+include 'sop-java'
 
