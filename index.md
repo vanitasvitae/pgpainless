@@ -5,6 +5,12 @@ Its primary functionality is encrypting, signing, decrypting and verifying data,
 
 ## Why should I use it?
 
+> At FlowCrypt we are using PGPainless in our Kotlin code bases on Android and on server side.
+> The ergonomy of legacy PGP tooling on Java is not very good, and PGPainless improves it greatly.
+> We were so happy with our initial tests and with Paul - the maintainer, that we decided to sponsor further development of this library.
+>
+> -Tom @ FlowCrypt.com
+
 There are a bunch of reasons why you should consider switching to PGPainless:
 
 ### Easy to use API
