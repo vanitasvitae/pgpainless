@@ -3,6 +3,7 @@ package sop;
 import java.io.InputStream;
 
 import sop.enums.EncryptAs;
+import sop.exception.SOPGPException;
 
 public interface Encrypt {
 
@@ -11,7 +12,8 @@ public interface Encrypt {
      *
      * @return builder instance
      */
-    Encrypt noArmor();
+    Encrypt noArmor()
+            throws SOPGPException.UnsupportedOption;
 
     /**
      * Sets encryption mode.
@@ -19,7 +21,8 @@ public interface Encrypt {
      * @param mode mode
      * @return builder instance
      */
-    Encrypt mode(EncryptAs mode);
+    Encrypt mode(EncryptAs mode)
+            throws SOPGPException.UnsupportedOption;
 
     /**
      * Adds the signer key.
@@ -27,7 +30,10 @@ public interface Encrypt {
      * @param key input stream containing the encoded signer key
      * @return builder instance
      */
-    Encrypt signWith(InputStream key);
+    Encrypt signWith(InputStream key)
+            throws SOPGPException.KeyIsProtected,
+            SOPGPException.CertCannotSign,
+            SOPGPException.UnsupportedAsymmetricAlgo;
 
     /**
      * Encrypt with the given password.
@@ -35,7 +41,9 @@ public interface Encrypt {
      * @param password password
      * @return builder instance
      */
-    Encrypt withPassword(String password);
+    Encrypt withPassword(String password)
+            throws SOPGPException.PasswordNotHumanReadable,
+            SOPGPException.UnsupportedOption;
 
     /**
      * Encrypt with the given cert.
@@ -43,12 +51,16 @@ public interface Encrypt {
      * @param cert input stream containing the encoded cert.
      * @return builder instance
      */
-    Encrypt withCert(InputStream cert);
+    Encrypt withCert(InputStream cert)
+            throws SOPGPException.CertCannotEncrypt,
+            SOPGPException.UnsupportedAsymmetricAlgo,
+            SOPGPException.BadData;
 
     /**
      * Encrypt the given data yielding the ciphertext.
      * @param plaintext plaintext
      * @return input stream containing the ciphertext
      */
-    InputStream plaintext(InputStream plaintext);
+    InputStream plaintext(InputStream plaintext)
+            throws SOPGPException.ExpectedText;
 }
