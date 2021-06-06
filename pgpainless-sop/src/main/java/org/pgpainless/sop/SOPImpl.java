@@ -1,0 +1,75 @@
+/*
+ * Copyright 2021 Paul Schaub.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.pgpainless.sop;
+
+import sop.Armor;
+import sop.Dearmor;
+import sop.Decrypt;
+import sop.Encrypt;
+import sop.ExtractCert;
+import sop.GenerateKey;
+import sop.SOP;
+import sop.Sign;
+import sop.Verify;
+import sop.Version;
+
+public class SOPImpl implements SOP {
+
+    @Override
+    public Version version() {
+        return new VersionImpl();
+    }
+
+    @Override
+    public GenerateKey generateKey() {
+        return new GenerateKeyImpl();
+    }
+
+    @Override
+    public ExtractCert extractCert() {
+        return new ExtractCertImpl();
+    }
+
+    @Override
+    public Sign sign() {
+        return null;
+    }
+
+    @Override
+    public Verify verify() {
+        return null;
+    }
+
+    @Override
+    public Encrypt encrypt() {
+        return null;
+    }
+
+    @Override
+    public Decrypt decrypt() {
+        return null;
+    }
+
+    @Override
+    public Armor armor() {
+        return null;
+    }
+
+    @Override
+    public Dearmor dearmor() {
+        return null;
+    }
+}

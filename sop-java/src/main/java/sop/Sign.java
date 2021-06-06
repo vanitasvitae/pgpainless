@@ -18,29 +18,39 @@ package sop;
 import java.io.IOException;
 import java.io.InputStream;
 
+import sop.enums.SignAs;
 import sop.exception.SOPGPException;
 
-public interface GenerateKey {
+public interface Sign {
 
     /**
      * Disable ASCII armor encoding.
      *
      * @return builder instance
      */
-    GenerateKey noArmor();
+    Sign noArmor();
 
     /**
-     * Adds a user-id.
+     * Sets the signature mode.
      *
-     * @param userId user-id
+     * @param mode signature mode
      * @return builder instance
      */
-    GenerateKey userId(String userId);
+    Sign mode(SignAs mode);
 
     /**
-     * Generate the OpenPGP key and return it encoded as an {@link InputStream}.
+     * Adds the signer key.
      *
-     * @return key
+     * @param key input stream containing encoded key
+     * @return builder instance
      */
-    InputStream generate() throws SOPGPException.MissingArg, SOPGPException.UnsupportedAsymmetricAlgo, IOException;
+    Sign key(InputStream key) throws SOPGPException.KeyIsProtected, SOPGPException.BadData, IOException;
+
+    /**
+     * Signs data.
+     *
+     * @param data input stream containing data
+     * @return input stream of signed data
+     */
+    InputStream data(InputStream data) throws IOException;
 }

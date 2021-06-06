@@ -15,32 +15,25 @@
  */
 package sop;
 
-import java.io.IOException;
 import java.io.InputStream;
 
-import sop.exception.SOPGPException;
+import sop.enums.ArmorLabel;
 
-public interface GenerateKey {
+public interface Armor {
 
     /**
-     * Disable ASCII armor encoding.
+     * Overrides automatic detection of label.
      *
+     * @param label armor label
      * @return builder instance
      */
-    GenerateKey noArmor();
+    Armor label(ArmorLabel label);
 
     /**
-     * Adds a user-id.
+     * Armor the provided data.
      *
-     * @param userId user-id
-     * @return builder instance
+     * @param data input stream of unarmored OpenPGP data
+     * @return armored data
      */
-    GenerateKey userId(String userId);
-
-    /**
-     * Generate the OpenPGP key and return it encoded as an {@link InputStream}.
-     *
-     * @return key
-     */
-    InputStream generate() throws SOPGPException.MissingArg, SOPGPException.UnsupportedAsymmetricAlgo, IOException;
+    InputStream data(InputStream data);
 }

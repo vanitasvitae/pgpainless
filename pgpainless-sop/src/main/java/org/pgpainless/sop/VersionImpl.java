@@ -13,12 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package sop;
+package org.pgpainless.sop;
 
-import java.io.InputStream;
-import java.util.List;
+import sop.Version;
 
-public interface VerifySignatures {
+public class VersionImpl implements Version {
+    @Override
+    public String getName() {
+        return "PGPainless-SOP";
+    }
 
-    Result<List<Verification>> data(InputStream data);
+    @Override
+    public String getVersion() {
+        return "0.2.0"; // TODO: Source version from build
+    }
 }

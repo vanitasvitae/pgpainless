@@ -13,12 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package sop;
 
-import java.io.InputStream;
-import java.util.List;
-
-public interface VerifySignatures {
-
-    Result<List<Verification>> data(InputStream data);
-}
+/**
+ * Stateless OpenPGP Interface for Java.
+ * Enumerations.
+ */
+package sop.enums;

@@ -13,12 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package sop;
+package org.pgpainless.cli;
 
-import java.io.InputStream;
-import java.util.List;
+import org.junit.jupiter.api.Test;
+import picocli.CommandLine;
 
-public interface VerifySignatures {
+public class DummyTest {
 
-    Result<List<Verification>> data(InputStream data);
+    @Test
+    public void dummyTest() {
+        new CommandLine(new PGPainlessCLI()).execute("generate-key", "Ed Snowden <citizen4@lavabit.com>");
+    }
 }
