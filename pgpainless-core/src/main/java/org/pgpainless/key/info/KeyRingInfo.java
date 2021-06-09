@@ -827,6 +827,10 @@ public class KeyRingInfo {
         return signingKeys;
     }
 
+    public Set<HashAlgorithm> getPreferredHashAlgorithms(@Nullable String userId) {
+        return getPreferredHashAlgorithms(userId, getKeyId());
+    }
+
     /**
      * Return the (sorted) set of preferred hash algorithms of the given key.
      *
@@ -840,6 +844,10 @@ public class KeyRingInfo {
         return keyAccessor.getPreferredHashAlgorithms();
     }
 
+    public Set<SymmetricKeyAlgorithm> getPreferredSymmetricKeyAlgorithms(@Nullable String userId) {
+        return getPreferredSymmetricKeyAlgorithms(userId, getKeyId());
+    }
+
     /**
      * Return the (sorted) set of preferred symmetric encryption algorithms of the given key.
      *
@@ -851,6 +859,10 @@ public class KeyRingInfo {
     public Set<SymmetricKeyAlgorithm> getPreferredSymmetricKeyAlgorithms(@Nullable String userId, long keyId) {
         KeyAccessor keyAccessor = getKeyAccessor(userId, keyId);
         return keyAccessor.getPreferredSymmetricKeyAlgorithms();
+    }
+
+    public Set<CompressionAlgorithm> getPreferredCompressionAlgorithms(@Nullable String userId) {
+        return getPreferredCompressionAlgorithms(userId, getKeyId());
     }
 
     /**
