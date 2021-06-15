@@ -35,5 +35,5 @@ public interface ExtractCert {
      * @param keyInputStream input stream containing the encoding of an OpenPGP key
      * @return input stream containing the encoding of the keys cert
      */
-    InputStream key(InputStream keyInputStream) throws IOException, SOPGPException.BadData;
+    Ready key(InputStream keyInputStream) throws IOException, SOPGPException.BadData;
 }

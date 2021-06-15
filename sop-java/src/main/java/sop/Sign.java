@@ -17,6 +17,7 @@ package sop;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import sop.enums.SignAs;
 import sop.exception.SOPGPException;
@@ -50,7 +51,7 @@ public interface Sign {
      * Signs data.
      *
      * @param data input stream containing data
-     * @return input stream of signed data
+     * @return ready
      */
-    InputStream data(InputStream data) throws IOException;
+    Ready data(InputStream data) throws IOException;
 }

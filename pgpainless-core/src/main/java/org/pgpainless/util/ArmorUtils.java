@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -136,6 +137,18 @@ public class ArmorUtils {
         armor.close();
 
         return out.toString();
+    }
+
+    public static ArmoredOutputStream createArmoredOutputStreamFor(PGPKeyRing keyRing, OutputStream outputStream) {
+        ArmoredOutputStream armor = ArmoredOutputStreamFactory.get(outputStream);
+        MultiMap<String, String> headerMap = keyToHeader(keyRing);
+        for (String header : headerMap.keySet()) {
+            for (String value : headerMap.get(header)) {
+                armor.addHeader(header, value);
+            }
+        }
+
+        return armor;
     }
 
     public static List<String> getCommendHeaderValues(ArmoredInputStream armor) {

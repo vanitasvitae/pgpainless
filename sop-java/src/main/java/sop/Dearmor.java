@@ -25,5 +25,5 @@ public interface Dearmor {
      * @param data armored OpenPGP data
      * @return input stream of unarmored data
      */
-    InputStream data(InputStream data);
+    Ready data(InputStream data);
 }

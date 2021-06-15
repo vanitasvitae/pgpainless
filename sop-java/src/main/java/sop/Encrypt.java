@@ -16,6 +16,7 @@
 package sop;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import sop.enums.EncryptAs;
 import sop.exception.SOPGPException;
@@ -76,6 +77,6 @@ public interface Encrypt {
      * @param plaintext plaintext
      * @return input stream containing the ciphertext
      */
-    InputStream plaintext(InputStream plaintext)
+    OutputStream plaintext(InputStream plaintext)
             throws SOPGPException.ExpectedText;
 }

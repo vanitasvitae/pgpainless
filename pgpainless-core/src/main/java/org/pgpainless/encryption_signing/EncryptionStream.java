@@ -256,4 +256,8 @@ public final class EncryptionStream extends OutputStream {
         }
         return resultBuilder.build();
     }
+
+    public boolean isClosed() {
+        return closed;
+    }
 }

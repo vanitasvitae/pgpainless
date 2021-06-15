@@ -15,10 +15,9 @@
  */
 package org.pgpainless.sop;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.io.OutputStream;
 
 import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPPublicKeyRing;
@@ -27,6 +26,7 @@ import org.pgpainless.PGPainless;
 import org.pgpainless.key.util.KeyRingUtils;
 import org.pgpainless.util.ArmorUtils;
 import sop.ExtractCert;
+import sop.Ready;
 import sop.exception.SOPGPException;
 
 public class ExtractCertImpl implements ExtractCert {
@@ -40,17 +40,22 @@ public class ExtractCertImpl implements ExtractCert {
     }
 
     @Override
-    public InputStream key(InputStream keyInputStream) throws IOException, SOPGPException.BadData {
+    public Ready key(InputStream keyInputStream) throws IOException, SOPGPException.BadData {
         try {
             PGPSecretKeyRing key = PGPainless.readKeyRing().secretKeyRing(keyInputStream);
             PGPPublicKeyRing cert = KeyRingUtils.publicKeyRingFrom(key);
 
-            if (!armor) {
-                return new ByteArrayInputStream(cert.getEncoded());
-            } else {
-                String armored = ArmorUtils.toAsciiArmoredString(cert);
-                return new ByteArrayInputStream(armored.getBytes(StandardCharsets.UTF_8));
-            }
+            return new Ready() {
+                @Override
+                public void writeTo(OutputStream outputStream) throws IOException {
+                    OutputStream out = armor ? ArmorUtils.createArmoredOutputStreamFor(cert, outputStream) : outputStream;
+                    cert.encode(out);
+
+                    if (armor) {
+                        out.close();
+                    }
+                }
+            };
         } catch (PGPException e) {
             throw new SOPGPException.BadData(e);
         }

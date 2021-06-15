@@ -17,20 +17,23 @@ package org.pgpainless.sop;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPSecretKeyRing;
+import org.bouncycastle.util.io.Streams;
 import org.pgpainless.PGPainless;
 import org.pgpainless.algorithm.DocumentSignatureType;
 import org.pgpainless.encryption_signing.EncryptionStream;
 import org.pgpainless.encryption_signing.ProducerOptions;
 import org.pgpainless.encryption_signing.SigningOptions;
+import org.pgpainless.key.info.KeyRingInfo;
 import org.pgpainless.key.protection.SecretKeyRingProtector;
+import sop.Ready;
 import sop.Sign;
+import sop.SwappableOutputStream;
 import sop.enums.SignAs;
 import sop.exception.SOPGPException;
 
@@ -57,6 +60,10 @@ public class SignImpl implements Sign {
     public Sign key(InputStream keyIn) throws SOPGPException.KeyIsProtected, SOPGPException.BadData, IOException {
         try {
             PGPSecretKeyRing key = PGPainless.readKeyRing().secretKeyRing(keyIn);
+            KeyRingInfo info = new KeyRingInfo(key);
+            if (!info.isFullyDecrypted()) {
+                throw new SOPGPException.KeyIsProtected();
+            }
             signingOptions.addDetachedSignature(SecretKeyRingProtector.unprotectedKeys(), key, modeToSigType(mode));
         } catch (PGPException e) {
             throw new SOPGPException.BadData(e);
@@ -65,19 +72,32 @@ public class SignImpl implements Sign {
     }
 
     @Override
-    public InputStream data(InputStream data) throws IOException {
-        PipedOutputStream pipedOut = new PipedOutputStream();
-
+    public Ready data(InputStream data) throws IOException {
+        SwappableOutputStream swappableOutputStream = new SwappableOutputStream();
         try {
             EncryptionStream signingStream = PGPainless.encryptAndOrSign()
-                    .onOutputStream(pipedOut)
+                    .onOutputStream(swappableOutputStream)
                     .withOptions(ProducerOptions.sign(signingOptions)
                             .setAsciiArmor(armor));
+
+            return new Ready() {
+                @Override
+                public void writeTo(OutputStream outputStream) throws IOException {
+
+                    if (signingStream.isClosed()) {
+                        throw new IllegalStateException("EncryptionStream is already closed.");
+                    }
+
+                    swappableOutputStream.setUnderlyingStream(outputStream);
+                    Streams.pipeAll(data, signingStream);
+                    signingStream.close();
+                }
+            };
+
         } catch (PGPException e) {
             throw new RuntimeException(e);
         }
 
-        return new PipedInputStream(pipedOut);
     }
 
     private static DocumentSignatureType modeToSigType(SignAs mode) {

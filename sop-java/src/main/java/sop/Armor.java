@@ -18,6 +18,7 @@ package sop;
 import java.io.InputStream;
 
 import sop.enums.ArmorLabel;
+import sop.exception.SOPGPException;
 
 public interface Armor {
 
@@ -27,7 +28,7 @@ public interface Armor {
      * @param label armor label
      * @return builder instance
      */
-    Armor label(ArmorLabel label);
+    Armor label(ArmorLabel label) throws SOPGPException.UnsupportedOption;
 
     /**
      * Armor the provided data.
@@ -35,5 +36,5 @@ public interface Armor {
      * @param data input stream of unarmored OpenPGP data
      * @return armored data
      */
-    InputStream data(InputStream data);
+    Ready data(InputStream data) throws SOPGPException.BadData;
 }
