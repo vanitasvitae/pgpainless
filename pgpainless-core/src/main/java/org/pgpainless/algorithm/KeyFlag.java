@@ -15,12 +15,9 @@
  */
 package org.pgpainless.algorithm;
 
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-
 import javax.annotation.Nonnull;
 
 import org.bouncycastle.bcpg.sig.KeyFlags;

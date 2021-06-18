@@ -1,3 +1,18 @@
+/*
+ * Copyright 2021 Paul Schaub.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.pgpainless.signature;
 
 import java.io.IOException;
@@ -8,8 +23,6 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
 
-import org.bouncycastle.openpgp.PGPException;
-import org.bouncycastle.openpgp.PGPPrivateKey;
 import org.bouncycastle.openpgp.PGPPublicKey;
 import org.bouncycastle.openpgp.PGPSecretKey;
 import org.bouncycastle.openpgp.PGPSignature;
@@ -26,8 +39,6 @@ import org.pgpainless.algorithm.SignatureType;
 import org.pgpainless.algorithm.SymmetricKeyAlgorithm;
 import org.pgpainless.exception.NotYetImplementedException;
 import org.pgpainless.key.OpenPgpV4Fingerprint;
-import org.pgpainless.key.protection.SecretKeyRingProtector;
-import org.pgpainless.key.protection.UnlockSecretKey;
 import org.pgpainless.key.util.RevocationAttributes;
 
 /**
@@ -39,7 +50,7 @@ public class SignatureBuilder {
     protected Date signatureCreationTime = new Date();
     protected final LowLevelSignatureBuilder builder;
 
-    protected SignatureBuilder(@Nonnull PGPSecretKey signingKey, @Nonnull SignatureType type) {
+    public SignatureBuilder(@Nonnull PGPSecretKey signingKey, @Nonnull SignatureType type) {
         this.signatureType = type;
         this.signingKey = signingKey;
 
@@ -68,19 +79,9 @@ public class SignatureBuilder {
         generator.setUnhashedSubpackets(unhashed);
     }
 
-    public PGPSignatureGenerator createSignatureGenerator(SecretKeyRingProtector protector) throws PGPException {
-        builder.setSignatureCreationTime(signatureCreationTime, LowLevelSignatureBuilder.Area.hashed, true);
-
-        PGPSignatureGenerator signatureGenerator = SignatureUtils.getSignatureGeneratorFor(signingKey);
-        addSubpacketsToSignatureGenerator(signatureGenerator);
-
-        PGPPrivateKey privateKey = UnlockSecretKey.unlockSecretKey(signingKey, protector);
-        signatureGenerator.init(signatureType.getCode(), privateKey);
-    }
-
     public class SelfSignatureBuilder extends SignatureBuilder {
 
-        private SelfSignatureBuilder(PGPSecretKey signingKey, SignatureType type) {
+        public SelfSignatureBuilder(PGPSecretKey signingKey, SignatureType type) {
             super(signingKey, type);
         }
 
@@ -255,9 +256,6 @@ public class SignatureBuilder {
                 throws IOException {
             getSubpackets(area).addEmbeddedSignature(critical, embeddedSignature);
             return this;
-        }
-
-        public PGPSignature createUserIdCertification(String userId, PGPSecretKey signingKey) {
         }
     }
 }
