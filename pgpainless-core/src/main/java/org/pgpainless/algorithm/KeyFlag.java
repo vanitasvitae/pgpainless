@@ -15,8 +15,13 @@
  */
 package org.pgpainless.algorithm;
 
+import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Nonnull;
 
 import org.bouncycastle.bcpg.sig.KeyFlags;
 
@@ -96,7 +101,21 @@ public enum KeyFlag {
     }
 
     /**
-     * Encode a list of {@link KeyFlag KeyFlags} into a bitmask.
+     * Encode a collection of {@link KeyFlag KeyFlags} into a bitmask.
+     *
+     * @param flags list of flags
+     * @return bitmask
+     */
+    public static int toBitmask(@Nonnull Collection<KeyFlag> flags) {
+        int mask = 0;
+        for (KeyFlag f : flags) {
+            mask |= f.getFlag();
+        }
+        return mask;
+    }
+
+    /**
+     * Encode an array of {@link KeyFlag KeyFlags} into a bitmask.
      *
      * @param flags list of flags
      * @return bitmask
