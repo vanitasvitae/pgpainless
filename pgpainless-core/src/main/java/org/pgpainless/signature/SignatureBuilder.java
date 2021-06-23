@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
 
+import org.bouncycastle.openpgp.PGPException;
+import org.bouncycastle.openpgp.PGPPrivateKey;
 import org.bouncycastle.openpgp.PGPPublicKey;
 import org.bouncycastle.openpgp.PGPSecretKey;
 import org.bouncycastle.openpgp.PGPSignature;
@@ -39,6 +41,8 @@ import org.pgpainless.algorithm.SignatureType;
 import org.pgpainless.algorithm.SymmetricKeyAlgorithm;
 import org.pgpainless.exception.NotYetImplementedException;
 import org.pgpainless.key.OpenPgpV4Fingerprint;
+import org.pgpainless.key.protection.SecretKeyRingProtector;
+import org.pgpainless.key.protection.UnlockSecretKey;
 import org.pgpainless.key.util.RevocationAttributes;
 
 /**
@@ -48,13 +52,15 @@ public class SignatureBuilder {
     protected final SignatureType signatureType;
     protected final PGPSecretKey signingKey;
     protected Date signatureCreationTime = new Date();
-    protected final LowLevelSignatureBuilder builder;
+    protected final BCBasedSubpacketsBuilder builder;
+    protected final SignatureGeneratorExecutor executor;
 
-    public SignatureBuilder(@Nonnull PGPSecretKey signingKey, @Nonnull SignatureType type) {
+    public SignatureBuilder(@Nonnull PGPSecretKey signingKey, @Nonnull SignatureType type, SignatureGeneratorExecutor executor) {
         this.signatureType = type;
         this.signingKey = signingKey;
 
-        this.builder = new LowLevelSignatureBuilder();
+        this.builder = new BCBasedSubpacketsBuilder();
+        this.executor = executor;
     }
 
     public SignatureBuilder setSignatureCreationTime(@Nonnull Date creationTime) {
@@ -64,53 +70,249 @@ public class SignatureBuilder {
 
     public SignatureBuilder setSignersUserId(String signerUserId) {
         // Place the signerUserId in the hashed area, since it is a non-self-validating datum
-        builder.setSignersUserId(signerUserId, LowLevelSignatureBuilder.Area.hashed, false);
+        builder.setSignersUserId(signerUserId, BCBasedSubpacketsBuilder.Area.hashed, false);
         return this;
     }
 
-    private void prepareDefaultSubpackets() {
-        builder.setSignatureCreationTime(signatureCreationTime, LowLevelSignatureBuilder.Area.hashed, true);
+    public PGPSignature build(SecretKeyRingProtector protector) throws PGPException {
+        PGPSignatureGenerator generator = new PGPSignatureGenerator(
+                SignatureUtils.getPgpContentSignerBuilderForKey(signingKey.getPublicKey())
+        );
+
+        generator.setHashedSubpackets(builder.hashedSubpackets.generate());
+        generator.setUnhashedSubpackets(builder.unhashedSubpackets.generate());
+
+        PGPPrivateKey privateKey = UnlockSecretKey.unlockSecretKey(signingKey, protector);
+        generator.init(signatureType.getCode(), privateKey);
+
+        return executor.execute(generator);
     }
 
-    private void addSubpacketsToSignatureGenerator(PGPSignatureGenerator generator) {
-        PGPSignatureSubpacketVector hashed = builder.hashedSubpackets.generate();
-        generator.setHashedSubpackets(hashed);
-        PGPSignatureSubpacketVector unhashed = builder.unhashedSubpackets.generate();
-        generator.setUnhashedSubpackets(unhashed);
-    }
+    public static class SelfSignatureBuilder extends SignatureBuilder {
 
-    public class SelfSignatureBuilder extends SignatureBuilder {
-
-        public SelfSignatureBuilder(PGPSecretKey signingKey, SignatureType type) {
-            super(signingKey, type);
+        public SelfSignatureBuilder(PGPSecretKey signingKey, SignatureType type, SignatureGeneratorExecutor executor) {
+            super(signingKey, type, executor);
         }
 
+        /**
+         *
+         * @param revocationKey
+         * @return
+         */
         public SelfSignatureBuilder setRevocationKey(PGPPublicKey revocationKey) {
             builder.setRevocationKey(
                     PublicKeyAlgorithm.fromId(revocationKey.getAlgorithm()),
                     new OpenPgpV4Fingerprint(revocationKey),
-                    LowLevelSignatureBuilder.Area.hashed,
+                    BCBasedSubpacketsBuilder.Area.hashed,
                     true);
             return this;
         }
 
+        /**
+         *
+         * TODO: This is not yet implemented in BC, so expect a {@link NotYetImplementedException} to be thrown.
+         * @param preferences
+         * @return
+         */
         public SelfSignatureBuilder setKeyServerPreferences(KeyServerPreferences preferences) {
-            builder.setKeyServerPreferences(preferences, LowLevelSignatureBuilder.Area.hashed, false);
+            builder.setKeyServerPreferences(preferences, BCBasedSubpacketsBuilder.Area.hashed, false);
+            return this;
+        }
+
+        public SelfSignatureBuilder addEmbeddedSignature(PGPSignature signature, boolean critical)
+                throws IOException {
+            builder.addEmbeddedSignature(signature, BCBasedSubpacketsBuilder.Area.hashed, critical);
             return this;
         }
     }
 
-    public static class LowLevelSignatureBuilder {
+    public static class BCSignatureBuilder implements SubpacketsBuilder.BaseSignature<BCSignatureBuilder> {
 
-        public enum Area {
-            hashed,
-            unhashed
+        @Override
+        public BCSignatureBuilder setSignatureCreationTime(@Nonnull Date creationTime, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
         }
+
+        @Override
+        public BCSignatureBuilder setIssuer(long keyId, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSignatureBuilder setSignatureExpirationTime(long secondsUntilExpiration, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSignatureBuilder setRevocable(boolean revocable, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSignatureBuilder setTrustSignature(int level, int amount, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSignatureBuilder setRegularExpression(@Nonnull String regex, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSignatureBuilder addNotationData(@Nonnull String notationName, @Nonnull String notationValue, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSignatureBuilder setPolicyURI(@Nonnull URI policyURI, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSignatureBuilder setPreferredKeyServer(@Nonnull URI keyServerURI, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSignatureBuilder setKeyFlags(@Nonnull Set<KeyFlag> keyFlags, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSignatureBuilder setSignersUserId(@Nonnull String signerUserId, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSignatureBuilder setSignatureTarget(@Nonnull PublicKeyAlgorithm publicKeyAlgorithm, @Nonnull HashAlgorithm hashAlgorithm, @Nonnull byte[] hashData, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSignatureBuilder addEmbeddedSignature(@Nonnull PGPSignature embeddedSignature, @Nonnull SubpacketsBuilder.Area area, boolean critical) throws IOException {
+            return null;
+        }
+    }
+
+    public static class BCSelfSignatureBuilder implements SubpacketsBuilder.SelfSignature<BCSelfSignatureBuilder> {
+
+        @Override
+        public BCSelfSignatureBuilder setSignatureCreationTime(@Nonnull Date creationTime, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSelfSignatureBuilder setIssuer(long keyId, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSelfSignatureBuilder setSignatureExpirationTime(long secondsUntilExpiration, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSelfSignatureBuilder setRevocable(boolean revocable, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSelfSignatureBuilder setTrustSignature(int level, int amount, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSelfSignatureBuilder setRegularExpression(@Nonnull String regex, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSelfSignatureBuilder addNotationData(@Nonnull String notationName, @Nonnull String notationValue, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSelfSignatureBuilder setPolicyURI(@Nonnull URI policyURI, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSelfSignatureBuilder setPreferredKeyServer(@Nonnull URI keyServerURI, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSelfSignatureBuilder setKeyFlags(@Nonnull Set<KeyFlag> keyFlags, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSelfSignatureBuilder setSignersUserId(@Nonnull String signerUserId, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSelfSignatureBuilder setSignatureTarget(@Nonnull PublicKeyAlgorithm publicKeyAlgorithm, @Nonnull HashAlgorithm hashAlgorithm, @Nonnull byte[] hashData, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSelfSignatureBuilder addEmbeddedSignature(@Nonnull PGPSignature embeddedSignature, @Nonnull SubpacketsBuilder.Area area, boolean critical) throws IOException {
+            return null;
+        }
+
+        @Override
+        public BCSelfSignatureBuilder setExportable(boolean exportable, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSelfSignatureBuilder setKeyExpirationTime(long secondsUntilExpiration, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSelfSignatureBuilder setPreferredSymmetricAlgorithms(@Nonnull List<SymmetricKeyAlgorithm> algorithms, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSelfSignatureBuilder setPreferredHashAlgorithms(@Nonnull List<HashAlgorithm> algorithms, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSelfSignatureBuilder setPreferredCompressionAlgorithms(@Nonnull List<CompressionAlgorithm> algorithms, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSelfSignatureBuilder setRevocationKey(@Nonnull PublicKeyAlgorithm algorithm, @Nonnull OpenPgpV4Fingerprint fingerprint, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSelfSignatureBuilder setKeyServerPreferences(@Nonnull KeyServerPreferences preferences, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSelfSignatureBuilder setPrimaryUserId(boolean isPrimary, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+
+        @Override
+        public BCSelfSignatureBuilder setFeatures(@Nonnull Set<Feature> features, @Nonnull SubpacketsBuilder.Area area, boolean critical) {
+            return null;
+        }
+    }
+
+    public static class BCBasedSubpacketsBuilder implements SubpacketsBuilder {
 
         private PGPSignatureSubpacketGenerator hashedSubpackets;
         private PGPSignatureSubpacketGenerator unhashedSubpackets;
 
-        public LowLevelSignatureBuilder() {
+        public BCBasedSubpacketsBuilder() {
             this.hashedSubpackets = new PGPSignatureSubpacketGenerator();
             this.unhashedSubpackets = new PGPSignatureSubpacketGenerator();
         }
@@ -119,22 +321,26 @@ public class SignatureBuilder {
             return (area == Area.hashed ? hashedSubpackets : unhashedSubpackets);
         }
 
-        public LowLevelSignatureBuilder setSignatureCreationTime(@Nonnull Date creationTime, @Nonnull Area area, boolean critical) {
+        @Override
+        public BCBasedSubpacketsBuilder setSignatureCreationTime(@Nonnull Date creationTime, @Nonnull Area area, boolean critical) {
             getSubpackets(area).setSignatureCreationTime(critical, creationTime);
             return this;
         }
 
-        public LowLevelSignatureBuilder setIssuer(long keyId, @Nonnull Area area, boolean critical) {
+        @Override
+        public BCBasedSubpacketsBuilder setIssuer(long keyId, @Nonnull Area area, boolean critical) {
             getSubpackets(area).setIssuerKeyID(critical, keyId);
             return this;
         }
 
-        public LowLevelSignatureBuilder setKeyExpirationTime(long secondsUntilExpiration, @Nonnull Area area, boolean critical) {
+        @Override
+        public BCBasedSubpacketsBuilder setKeyExpirationTime(long secondsUntilExpiration, @Nonnull Area area, boolean critical) {
             getSubpackets(area).setKeyExpirationTime(critical, secondsUntilExpiration);
             return this;
         }
 
-        public LowLevelSignatureBuilder setPreferredSymmetricAlgorithms(@Nonnull List<SymmetricKeyAlgorithm> algorithms, @Nonnull Area area, boolean critical) {
+        @Override
+        public BCBasedSubpacketsBuilder setPreferredSymmetricAlgorithms(@Nonnull List<SymmetricKeyAlgorithm> algorithms, @Nonnull Area area, boolean critical) {
             int[] algorithmCodes = new int[algorithms.size()];
             for (int i = 0, algorithmsSize = algorithms.size(); i < algorithmsSize; i++) {
                 algorithmCodes[i] = algorithms.get(i).getAlgorithmId();
@@ -144,7 +350,8 @@ public class SignatureBuilder {
             return this;
         }
 
-        public LowLevelSignatureBuilder setPreferredHashAlgorithms(@Nonnull List<HashAlgorithm> algorithms, @Nonnull Area area, boolean critical) {
+        @Override
+        public BCBasedSubpacketsBuilder setPreferredHashAlgorithms(@Nonnull List<HashAlgorithm> algorithms, @Nonnull Area area, boolean critical) {
             int[] algorithmCodes = new int[algorithms.size()];
             for (int i = 0, algorithmsSize = algorithms.size(); i < algorithmsSize; i++) {
                 algorithmCodes[i] = algorithms.get(i).getAlgorithmId();
@@ -154,7 +361,8 @@ public class SignatureBuilder {
             return this;
         }
 
-        public LowLevelSignatureBuilder setPreferredCompressionAlgorithms(@Nonnull List<CompressionAlgorithm> algorithms, @Nonnull Area area, boolean critical) {
+        @Override
+        public BCBasedSubpacketsBuilder setPreferredCompressionAlgorithms(@Nonnull List<CompressionAlgorithm> algorithms, @Nonnull Area area, boolean critical) {
             int[] algorithmsCodes = new int[algorithms.size()];
             for (int i = 0, algorithmsSize = algorithms.size(); i < algorithmsSize; i++) {
                 algorithmsCodes[i] = algorithms.get(i).getAlgorithmId();
@@ -164,22 +372,26 @@ public class SignatureBuilder {
             return this;
         }
 
-        public LowLevelSignatureBuilder setSignatureExpirationTime(long secondsUntilExpiration, @Nonnull Area area, boolean critical) {
+        @Override
+        public BCBasedSubpacketsBuilder setSignatureExpirationTime(long secondsUntilExpiration, @Nonnull Area area, boolean critical) {
             getSubpackets(area).setSignatureExpirationTime(critical, secondsUntilExpiration);
             return this;
         }
 
-        public LowLevelSignatureBuilder setExportable(boolean exportable, @Nonnull Area area, boolean critical) {
+        @Override
+        public BCBasedSubpacketsBuilder setExportable(boolean exportable, @Nonnull Area area, boolean critical) {
             getSubpackets(area).setExportable(critical, exportable);
             return this;
         }
 
-        public LowLevelSignatureBuilder setRevocable(boolean revocable, @Nonnull Area area, boolean critical) {
+        @Override
+        public BCBasedSubpacketsBuilder setRevocable(boolean revocable, @Nonnull Area area, boolean critical) {
             getSubpackets(area).setRevocable(critical, revocable);
             return this;
         }
 
-        public LowLevelSignatureBuilder setTrustSignature(int level, int amount, @Nonnull Area area, boolean critical) {
+        @Override
+        public BCBasedSubpacketsBuilder setTrustSignature(int level, int amount, @Nonnull Area area, boolean critical) {
             if (level < 0 || level > 255) {
                 throw new IllegalArgumentException("Trust level must be a positive number in the range of 0 <= level <= 255");
             }
@@ -190,61 +402,73 @@ public class SignatureBuilder {
             return this;
         }
 
-        public LowLevelSignatureBuilder setRegularExpression(@Nonnull String regex, @Nonnull Area area, boolean critical) {
+        @Override
+        public BCBasedSubpacketsBuilder setRegularExpression(@Nonnull String regex, @Nonnull Area area, boolean critical) {
             throw new NotYetImplementedException();
         }
 
-        public LowLevelSignatureBuilder setRevocationKey(@Nonnull PublicKeyAlgorithm algorithm, @Nonnull OpenPgpV4Fingerprint fingerprint, @Nonnull Area area, boolean critical) {
+        @Override
+        public BCBasedSubpacketsBuilder setRevocationKey(@Nonnull PublicKeyAlgorithm algorithm, @Nonnull OpenPgpV4Fingerprint fingerprint, @Nonnull Area area, boolean critical) {
             getSubpackets(area).addRevocationKey(critical, algorithm.getAlgorithmId(), fingerprint.toString().getBytes(Charset.forName("UTF-8")));
             return this;
         }
 
-        public LowLevelSignatureBuilder addNotationData(@Nonnull String notationName, @Nonnull String notationValue, @Nonnull Area area, boolean critical) {
+        @Override
+        public BCBasedSubpacketsBuilder addNotationData(@Nonnull String notationName, @Nonnull String notationValue, @Nonnull Area area, boolean critical) {
             getSubpackets(area).addNotationData(critical, true, notationName, notationValue);
             return this;
         }
 
-        public LowLevelSignatureBuilder setKeyServerPreferences(@Nonnull KeyServerPreferences preferences, @Nonnull Area area, boolean critical) {
+        @Override
+        public BCBasedSubpacketsBuilder setKeyServerPreferences(@Nonnull KeyServerPreferences preferences, @Nonnull Area area, boolean critical) {
             throw new NotYetImplementedException();
         }
 
-        public LowLevelSignatureBuilder setPreferredKeyServer(@Nonnull URI keyServerURI, @Nonnull Area area, boolean critical) {
+        @Override
+        public BCBasedSubpacketsBuilder setPreferredKeyServer(@Nonnull URI keyServerURI, @Nonnull Area area, boolean critical) {
             throw new NotYetImplementedException();
         }
 
-        public LowLevelSignatureBuilder setPrimaryUserId(boolean isPrimary, @Nonnull Area area, boolean critical) {
+        @Override
+        public BCBasedSubpacketsBuilder setPrimaryUserId(boolean isPrimary, @Nonnull Area area, boolean critical) {
             getSubpackets(area).setPrimaryUserID(critical, isPrimary);
             return this;
         }
 
-        public LowLevelSignatureBuilder setPolicyURI(@Nonnull URI policyURI, @Nonnull Area area, boolean critical) {
+        @Override
+        public BCBasedSubpacketsBuilder setPolicyURI(@Nonnull URI policyURI, @Nonnull Area area, boolean critical) {
             throw new NotYetImplementedException();
         }
 
-        public LowLevelSignatureBuilder setKeyFlags(@Nonnull Set<KeyFlag> keyFlags, @Nonnull Area area, boolean critical) {
+        @Override
+        public BCBasedSubpacketsBuilder setKeyFlags(@Nonnull Set<KeyFlag> keyFlags, @Nonnull Area area, boolean critical) {
             int mask = KeyFlag.toBitmask(keyFlags);
             getSubpackets(area).setKeyFlags(critical, mask);
             return this;
         }
 
-        public LowLevelSignatureBuilder setSignersUserId(@Nonnull String signerUserId, @Nonnull Area area, boolean critical) {
+        @Override
+        public BCBasedSubpacketsBuilder setSignersUserId(@Nonnull String signerUserId, @Nonnull Area area, boolean critical) {
             getSubpackets(area).addSignerUserID(critical, signerUserId);
             return this;
         }
 
-        public LowLevelSignatureBuilder setRevocationReason(@Nonnull RevocationAttributes revocationReason, @Nonnull Area area, boolean critical) {
+        @Override
+        public BCBasedSubpacketsBuilder setRevocationReason(@Nonnull RevocationAttributes revocationReason, @Nonnull Area area, boolean critical) {
             getSubpackets(area).setRevocationReason(critical, revocationReason.getReason().code(), revocationReason.getDescription());
             return this;
         }
 
-        public LowLevelSignatureBuilder setFeatures(@Nonnull Set<Feature> features, @Nonnull Area area, boolean critical) {
+        @Override
+        public BCBasedSubpacketsBuilder setFeatures(@Nonnull Set<Feature> features, @Nonnull Area area, boolean critical) {
             for (Feature feature : features) {
                 getSubpackets(area).setFeature(critical, feature.getFeatureId());
             }
             return this;
         }
 
-        public LowLevelSignatureBuilder setSignatureTarget(@Nonnull PublicKeyAlgorithm publicKeyAlgorithm,
+        @Override
+        public BCBasedSubpacketsBuilder setSignatureTarget(@Nonnull PublicKeyAlgorithm publicKeyAlgorithm,
                                                            @Nonnull HashAlgorithm hashAlgorithm,
                                                            @Nonnull byte[] hashData,
                                                            @Nonnull Area area, boolean critical) {
@@ -252,10 +476,23 @@ public class SignatureBuilder {
             return this;
         }
 
-        public LowLevelSignatureBuilder addEmbeddedSignature(@Nonnull PGPSignature embeddedSignature, @Nonnull Area area, boolean critical)
+        @Override
+        public BCBasedSubpacketsBuilder addEmbeddedSignature(@Nonnull PGPSignature embeddedSignature, @Nonnull Area area, boolean critical)
                 throws IOException {
             getSubpackets(area).addEmbeddedSignature(critical, embeddedSignature);
             return this;
         }
+
+        public PGPSignatureSubpacketVector getHashedSubpackets() {
+            return hashedSubpackets.generate();
+        }
+
+        public PGPSignatureSubpacketVector getUnhashedSubpackets() {
+            return unhashedSubpackets.generate();
+        }
+    }
+
+    public interface SignatureGeneratorExecutor {
+        PGPSignature execute(PGPSignatureGenerator generator) throws PGPException;
     }
 }
