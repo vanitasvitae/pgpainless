@@ -15,6 +15,7 @@
  */
 package org.pgpainless.sop;
 
+import org.pgpainless.decryption_verification.OpenPgpMetadata;
 import sop.Armor;
 import sop.Dearmor;
 import sop.Decrypt;
@@ -59,8 +60,8 @@ public class SOPImpl implements SOP {
     }
 
     @Override
-    public Decrypt decrypt() {
-        return null;
+    public Decrypt<OpenPgpMetadata> decrypt() {
+        return new DecryptImpl();
     }
 
     @Override
