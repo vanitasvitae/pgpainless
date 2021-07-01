@@ -33,7 +33,7 @@ import org.pgpainless.exception.NotYetImplementedException;
 import org.pgpainless.key.info.KeyRingInfo;
 import org.pgpainless.key.protection.SecretKeyRingProtector;
 import org.pgpainless.util.Passphrase;
-import sop.Decrypt;
+import sop.operation.Decrypt;
 import sop.ReadyWithResult;
 import sop.SessionKey;
 import sop.exception.SOPGPException;

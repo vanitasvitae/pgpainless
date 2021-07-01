@@ -15,6 +15,19 @@
  */
 package sop;
 
+import sop.operation.Armor;
+import sop.operation.Dearmor;
+import sop.operation.Decrypt;
+import sop.operation.Encrypt;
+import sop.operation.ExtractCert;
+import sop.operation.GenerateKey;
+import sop.operation.Sign;
+import sop.operation.Verify;
+import sop.operation.Version;
+
+/**
+ * Stateless OpenPGP Interface.
+ */
 public interface SOP {
 
     /**
@@ -70,7 +83,7 @@ public interface SOP {
      *
      * @return builder instance
      */
-    Decrypt decrypt();
+    <T> Decrypt<T> decrypt();
 
     /**
      * Convert binary OpenPGP data to ASCII.

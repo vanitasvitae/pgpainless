@@ -13,44 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package sop;
+package sop.operation;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import sop.enums.SignAs;
+import sop.Ready;
 import sop.exception.SOPGPException;
 
-public interface Sign {
+public interface ExtractCert {
 
     /**
      * Disable ASCII armor encoding.
      *
      * @return builder instance
      */
-    Sign noArmor();
+    ExtractCert noArmor();
 
     /**
-     * Sets the signature mode.
+     * Extract the cert from the provided key.
      *
-     * @param mode signature mode
-     * @return builder instance
+     * @param keyInputStream input stream containing the encoding of an OpenPGP key
+     * @return input stream containing the encoding of the keys cert
      */
-    Sign mode(SignAs mode);
-
-    /**
-     * Adds the signer key.
-     *
-     * @param key input stream containing encoded key
-     * @return builder instance
-     */
-    Sign key(InputStream key) throws SOPGPException.KeyIsProtected, SOPGPException.BadData, IOException;
-
-    /**
-     * Signs data.
-     *
-     * @param data input stream containing data
-     * @return ready
-     */
-    Ready data(InputStream data) throws IOException;
+    Ready key(InputStream keyInputStream) throws IOException, SOPGPException.BadData;
 }

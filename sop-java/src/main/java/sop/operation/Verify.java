@@ -13,34 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package sop;
+package sop.operation;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 
-import sop.exception.SOPGPException;
-
-public interface GenerateKey {
+public interface Verify {
 
     /**
-     * Disable ASCII armor encoding.
+     * Makes the SOP implementation consider signatures before this date invalid.
+     *
+     * @param timestamp timestamp
+     * @return builder instance
+     */
+    Verify notBefore(Date timestamp);
+
+    /**
+     * Makes the SOP implementation consider signatures after this date invalid.
+     *
+     * @param timestamp timestamp
+     * @return builder instance
+     */
+    Verify notAfter(Date timestamp);
+
+    /**
+     * Adds the verification cert.
+     *
+     * @param cert input stream containing the encoded cert
+     * @return builder instance
+     */
+    Verify cert(InputStream cert);
+
+    /**
+     * Provides the signatures.
+     * @param signatures input stream containing encoded, detached signatures.
      *
      * @return builder instance
      */
-    GenerateKey noArmor();
+    VerifySignatures signatures(InputStream signatures);
 
-    /**
-     * Adds a user-id.
-     *
-     * @param userId user-id
-     * @return builder instance
-     */
-    GenerateKey userId(String userId);
-
-    /**
-     * Generate the OpenPGP key and return it encoded as an {@link InputStream}.
-     *
-     * @return key
-     */
-    InputStream generate() throws SOPGPException.MissingArg, SOPGPException.UnsupportedAsymmetricAlgo, IOException;
 }

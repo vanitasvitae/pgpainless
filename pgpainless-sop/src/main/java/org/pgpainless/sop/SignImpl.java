@@ -32,7 +32,7 @@ import org.pgpainless.encryption_signing.SigningOptions;
 import org.pgpainless.key.info.KeyRingInfo;
 import org.pgpainless.key.protection.SecretKeyRingProtector;
 import sop.Ready;
-import sop.Sign;
+import sop.operation.Sign;
 import sop.SwappableOutputStream;
 import sop.enums.SignAs;
 import sop.exception.SOPGPException;

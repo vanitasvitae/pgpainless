@@ -13,28 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package sop;
+package sop.operation;
 
 import java.io.InputStream;
+import java.util.List;
 
-import sop.enums.ArmorLabel;
-import sop.exception.SOPGPException;
+import sop.Result;
+import sop.Verification;
 
-public interface Armor {
+public interface VerifySignatures {
 
-    /**
-     * Overrides automatic detection of label.
-     *
-     * @param label armor label
-     * @return builder instance
-     */
-    Armor label(ArmorLabel label) throws SOPGPException.UnsupportedOption;
-
-    /**
-     * Armor the provided data.
-     *
-     * @param data input stream of unarmored OpenPGP data
-     * @return armored data
-     */
-    Ready data(InputStream data) throws SOPGPException.BadData;
+    Result<List<Verification>> data(InputStream data);
 }

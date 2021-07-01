@@ -15,7 +15,7 @@
  */
 package org.pgpainless.sop;
 
-import sop.Version;
+import sop.operation.Version;
 
 public class VersionImpl implements Version {
     @Override

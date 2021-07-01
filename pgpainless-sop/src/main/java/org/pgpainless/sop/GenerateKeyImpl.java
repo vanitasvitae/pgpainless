@@ -31,7 +31,7 @@ import org.pgpainless.PGPainless;
 import org.pgpainless.key.modification.secretkeyring.SecretKeyRingEditorInterface;
 import org.pgpainless.key.protection.SecretKeyRingProtector;
 import org.pgpainless.util.ArmorUtils;
-import sop.GenerateKey;
+import sop.operation.GenerateKey;
 import sop.exception.SOPGPException;
 
 public class GenerateKeyImpl implements GenerateKey {

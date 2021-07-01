@@ -13,12 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package sop;
+package sop.operation;
 
 import java.io.InputStream;
-import java.util.List;
 
-public interface VerifySignatures {
+import sop.Ready;
 
-    Result<List<Verification>> data(InputStream data);
+public interface Dearmor {
+
+    /**
+     * Dearmor armored OpenPGP data.
+     *
+     * @param data armored OpenPGP data
+     * @return input stream of unarmored data
+     */
+    Ready data(InputStream data);
 }

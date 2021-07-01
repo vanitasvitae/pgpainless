@@ -16,16 +16,16 @@
 package org.pgpainless.sop;
 
 import org.pgpainless.decryption_verification.OpenPgpMetadata;
-import sop.Armor;
-import sop.Dearmor;
-import sop.Decrypt;
-import sop.Encrypt;
-import sop.ExtractCert;
-import sop.GenerateKey;
+import sop.operation.Armor;
+import sop.operation.Dearmor;
+import sop.operation.Decrypt;
+import sop.operation.Encrypt;
+import sop.operation.ExtractCert;
+import sop.operation.GenerateKey;
 import sop.SOP;
-import sop.Sign;
-import sop.Verify;
-import sop.Version;
+import sop.operation.Sign;
+import sop.operation.Verify;
+import sop.operation.Version;
 
 public class SOPImpl implements SOP {
 

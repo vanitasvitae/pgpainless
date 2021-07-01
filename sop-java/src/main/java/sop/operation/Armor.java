@@ -13,17 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package sop;
+package sop.operation;
 
 import java.io.InputStream;
 
-public interface Dearmor {
+import sop.Ready;
+import sop.enums.ArmorLabel;
+import sop.exception.SOPGPException;
+
+public interface Armor {
 
     /**
-     * Dearmor armored OpenPGP data.
+     * Overrides automatic detection of label.
      *
-     * @param data armored OpenPGP data
-     * @return input stream of unarmored data
+     * @param label armor label
+     * @return builder instance
      */
-    Ready data(InputStream data);
+    Armor label(ArmorLabel label) throws SOPGPException.UnsupportedOption;
+
+    /**
+     * Armor the provided data.
+     *
+     * @param data input stream of unarmored OpenPGP data
+     * @return armored data
+     */
+    Ready data(InputStream data) throws SOPGPException.BadData;
 }
