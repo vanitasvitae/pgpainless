@@ -15,5 +15,32 @@
  */
 package sop;
 
-public interface SessionKey {
+public class SessionKey {
+
+    private final byte algorithm;
+    private final byte[] sessionKey;
+
+    public SessionKey(byte algorithm, byte[] sessionKey) {
+        this.algorithm = algorithm;
+        this.sessionKey = sessionKey;
+    }
+
+    /**
+     * Return the symmetric algorithm octet.
+     *
+     * @return algorithm id
+     */
+    public byte getAlgorithm() {
+        return algorithm;
+    }
+
+    /**
+     * Return the session key.
+     *
+     * @return session key
+     */
+    public byte[] getKey() {
+        return sessionKey;
+    }
+
 }
