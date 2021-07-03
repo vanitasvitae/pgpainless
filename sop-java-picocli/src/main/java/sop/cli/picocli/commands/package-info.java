@@ -16,4 +16,4 @@
 /**
  * Subcommands of the PGPainless SOP.
  */
-package org.pgpainless.cli.commands;
+package sop.cli.picocli.commands;

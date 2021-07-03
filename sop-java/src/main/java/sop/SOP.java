@@ -83,7 +83,7 @@ public interface SOP {
      *
      * @return builder instance
      */
-    <T> Decrypt<T> decrypt();
+    Decrypt decrypt();
 
     /**
      * Convert binary OpenPGP data to ASCII.

@@ -19,11 +19,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 
+import sop.DecryptionResult;
 import sop.ReadyWithResult;
 import sop.SessionKey;
 import sop.exception.SOPGPException;
 
-public interface Decrypt<T> {
+public interface Decrypt {
 
     /**
      * Makes the SOP consider signatures before this date invalid.
@@ -31,7 +32,7 @@ public interface Decrypt<T> {
      * @param timestamp timestamp
      * @return builder instance
      */
-    Decrypt<T> verifyNotBefore(Date timestamp)
+    Decrypt verifyNotBefore(Date timestamp)
             throws SOPGPException.UnsupportedOption;
 
     /**
@@ -40,7 +41,7 @@ public interface Decrypt<T> {
      * @param timestamp timestamp
      * @return builder instance
      */
-    Decrypt<T> verifyNotAfter(Date timestamp)
+    Decrypt verifyNotAfter(Date timestamp)
             throws SOPGPException.UnsupportedOption;
 
     /**
@@ -49,9 +50,8 @@ public interface Decrypt<T> {
      * @param cert input stream containing the cert
      * @return builder instance
      */
-    Decrypt<T> verifyWithCert(InputStream cert)
-            throws SOPGPException.CertCannotSign,
-            SOPGPException.BadData,
+    Decrypt verifyWithCert(InputStream cert)
+            throws SOPGPException.BadData,
             IOException;
 
     /**
@@ -60,7 +60,7 @@ public interface Decrypt<T> {
      * @param sessionKey session key
      * @return builder instance
      */
-    Decrypt<T> withSessionKey(SessionKey sessionKey)
+    Decrypt withSessionKey(SessionKey sessionKey)
             throws SOPGPException.UnsupportedOption;
 
     /**
@@ -69,7 +69,7 @@ public interface Decrypt<T> {
      * @param password password
      * @return builder instance
      */
-    Decrypt<T> withPassword(String password)
+    Decrypt withPassword(String password)
             throws SOPGPException.PasswordNotHumanReadable,
             SOPGPException.UnsupportedOption;
 
@@ -79,7 +79,7 @@ public interface Decrypt<T> {
      * @param key input stream containing the key
      * @return builder instance
      */
-    Decrypt<T> withKey(InputStream key)
+    Decrypt withKey(InputStream key)
             throws SOPGPException.KeyIsProtected,
             SOPGPException.BadData,
             SOPGPException.UnsupportedAsymmetricAlgo;
@@ -89,6 +89,6 @@ public interface Decrypt<T> {
      * @param ciphertext ciphertext
      * @return ready with result
      */
-    ReadyWithResult<T> ciphertext(InputStream ciphertext)
-            throws SOPGPException.BadData;
+    ReadyWithResult<DecryptionResult> ciphertext(InputStream ciphertext)
+            throws SOPGPException.BadData, SOPGPException.MissingArg;
 }

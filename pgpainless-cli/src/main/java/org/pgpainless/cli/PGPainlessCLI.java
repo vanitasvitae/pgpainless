@@ -15,44 +15,18 @@
  */
 package org.pgpainless.cli;
 
-import org.pgpainless.cli.commands.Armor;
-import org.pgpainless.cli.commands.Dearmor;
-import org.pgpainless.cli.commands.Decrypt;
-import org.pgpainless.cli.commands.Encrypt;
-import org.pgpainless.cli.commands.ExtractCert;
-import org.pgpainless.cli.commands.GenerateKey;
-import org.pgpainless.cli.commands.Sign;
-import org.pgpainless.cli.commands.Verify;
-import org.pgpainless.cli.commands.Version;
-import picocli.CommandLine;
+import org.pgpainless.sop.SOPImpl;
+import sop.cli.picocli.SopCLI;
 
-@CommandLine.Command(exitCodeOnInvalidInput = 69,
-        subcommands = {
-                Armor.class,
-                Dearmor.class,
-                Decrypt.class,
-                Encrypt.class,
-                ExtractCert.class,
-                GenerateKey.class,
-                Sign.class,
-                Verify.class,
-                Version.class
-        }
-)
-public class PGPainlessCLI implements Runnable {
+public class PGPainlessCLI {
 
     public PGPainlessCLI() {
 
     }
 
     public static void main(String[] args) {
-        int code = new CommandLine(new PGPainlessCLI())
-                .execute(args);
+        SopCLI.setSopInstance(new SOPImpl());
+        int code = SopCLI.execute(args);
         System.exit(code);
-    }
-
-    @Override
-    public void run() {
-
     }
 }

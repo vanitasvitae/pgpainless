@@ -13,30 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.pgpainless.cli.commands;
+package sop.cli.picocli.commands;
 
-import static org.pgpainless.cli.Print.print_ln;
-
-import java.io.IOException;
-import java.util.Properties;
+import java.util.List;
 
 import picocli.CommandLine;
 
-@CommandLine.Command(name = "version", description = "Display version information about the tool",
+@CommandLine.Command(name = "generate-key",
+        description = "Generate a secret key",
         exitCodeOnInvalidInput = 37)
-public class Version implements Runnable {
+public class GenerateKeyCmd implements Runnable {
+
+    @CommandLine.Option(names = "--no-armor",
+            description = "ASCII armor the output",
+            negatable = true)
+    boolean armor = true;
+
+    @CommandLine.Parameters(description = "User-ID, eg. \"Alice <alice@example.com>\"")
+    List<String> userId;
 
     @Override
     public void run() {
-        // See https://stackoverflow.com/a/50119235
-        String version;
-        try {
-            Properties properties = new Properties();
-            properties.load(getClass().getResourceAsStream("/version.properties"));
-            version = properties.getProperty("version");
-        } catch (IOException e) {
-            version = "DEVELOPMENT";
-        }
-        print_ln("PGPainlessCLI " + version);
+
     }
 }

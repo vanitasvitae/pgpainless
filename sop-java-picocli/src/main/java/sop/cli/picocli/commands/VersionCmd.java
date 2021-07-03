@@ -13,29 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.pgpainless.cli.commands;
+package sop.cli.picocli.commands;
 
-import org.bouncycastle.bcpg.ArmoredInputStream;
-import org.bouncycastle.util.io.Streams;
 import picocli.CommandLine;
+import sop.cli.picocli.SopCLI;
+import sop.operation.Version;
 
-import java.io.IOException;
-
-import static org.pgpainless.cli.Print.err_ln;
-
-@CommandLine.Command(name = "dearmor",
-        description = "Remove ASCII Armor from standard input",
+@CommandLine.Command(name = "version", description = "Display version information about the tool",
         exitCodeOnInvalidInput = 37)
-public class Dearmor implements Runnable {
+public class VersionCmd implements Runnable {
 
     @Override
     public void run() {
-        try (ArmoredInputStream in = new ArmoredInputStream(System.in, true)) {
-            Streams.pipeAll(in, System.out);
-        } catch (IOException e) {
-            err_ln("Data cannot be dearmored.");
-            err_ln(e.getMessage());
-            System.exit(1);
-        }
+        Version version = SopCLI.getSop().version();
+
+        System.out.println(version.getName() + " " + version.getVersion());
     }
 }

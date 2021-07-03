@@ -15,14 +15,13 @@
  */
 package org.pgpainless.sop;
 
-import org.pgpainless.decryption_verification.OpenPgpMetadata;
+import sop.SOP;
 import sop.operation.Armor;
 import sop.operation.Dearmor;
 import sop.operation.Decrypt;
 import sop.operation.Encrypt;
 import sop.operation.ExtractCert;
 import sop.operation.GenerateKey;
-import sop.SOP;
 import sop.operation.Sign;
 import sop.operation.Verify;
 import sop.operation.Version;
@@ -60,7 +59,7 @@ public class SOPImpl implements SOP {
     }
 
     @Override
-    public Decrypt<OpenPgpMetadata> decrypt() {
+    public Decrypt decrypt() {
         return new DecryptImpl();
     }
 

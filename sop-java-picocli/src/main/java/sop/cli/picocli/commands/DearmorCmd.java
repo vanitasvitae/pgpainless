@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Paul Schaub.
+ * Copyright 2020 Paul Schaub.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,30 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.pgpainless.sop;
+package sop.cli.picocli.commands;
 
 import java.io.IOException;
-import java.util.Properties;
 
-import sop.operation.Version;
+import picocli.CommandLine;
+import sop.cli.picocli.SopCLI;
+import sop.exception.SOPGPException;
 
-public class VersionImpl implements Version {
+@CommandLine.Command(name = "dearmor",
+        description = "Remove ASCII Armor from standard input",
+        exitCodeOnInvalidInput = SOPGPException.UnsupportedOption.EXIT_CODE)
+public class DearmorCmd implements Runnable {
+
     @Override
-    public String getName() {
-        return "PGPainless-SOP";
-    }
-
-    @Override
-    public String getVersion() {
-        // See https://stackoverflow.com/a/50119235
-        String version;
+    public void run() {
         try {
-            Properties properties = new Properties();
-            properties.load(getClass().getResourceAsStream("/version.properties"));
-            version = properties.getProperty("version");
+            SopCLI.getSop()
+                    .dearmor()
+                    .data(System.in)
+                    .writeTo(System.out);
         } catch (IOException e) {
-            version = "DEVELOPMENT";
+            System.err.println("IO Error.");
+            e.printStackTrace();
+            System.exit(1);
         }
-        return version;
     }
 }

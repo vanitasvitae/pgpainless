@@ -22,10 +22,10 @@ task generateVersionProperties {
 processResources.dependsOn generateVersionProperties
 
 dependencies {
+    implementation(project(":pgpainless-sop"))
+    implementation(project(":sop-java"))
 
-
-    implementation(project(":pgpainless-core"))
-
+    implementation(project(":sop-java-picocli"))
     implementation 'info.picocli:picocli:4.5.2'
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"

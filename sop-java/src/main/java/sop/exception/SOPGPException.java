@@ -31,17 +31,32 @@ public class SOPGPException extends Exception {
 
     public static class NoSignature extends SOPGPException {
 
+        public static final int EXIT_CODE = 3;
+
+        public int getExitCode() {
+            return EXIT_CODE;
+        }
     }
 
     public static class UnsupportedAsymmetricAlgo extends SOPGPException {
 
+        public static final int EXIT_CODE = 13;
+
         public UnsupportedAsymmetricAlgo(Throwable e) {
             super(e);
+        }
+
+        public int getExitCode() {
+            return EXIT_CODE;
         }
     }
 
     public static class CertCannotEncrypt extends SOPGPException {
+        public static final int EXIT_CODE = 17;
 
+        public int getExitCode() {
+            return EXIT_CODE;
+        }
     }
 
     public static class CertCannotSign extends SOPGPException {
@@ -50,36 +65,73 @@ public class SOPGPException extends Exception {
 
     public static class MissingArg extends SOPGPException {
 
+        public static final int EXIT_CODE = 19;
+
         public MissingArg(String s) {
             super(s);
+        }
+
+        public int getExitCode() {
+            return EXIT_CODE;
         }
     }
 
     public static class IncompleteVerification extends SOPGPException {
 
+        public static final int EXIT_CODE = 23;
+
+        public int getExitCode() {
+            return EXIT_CODE;
+        }
     }
 
     public static class CannotDecrypt extends SOPGPException {
 
+        public static final int EXIT_CODE = 29;
+
+        public int getExitCode() {
+            return EXIT_CODE;
+        }
     }
 
     public static class PasswordNotHumanReadable extends SOPGPException {
 
+        public static final int EXIT_CODE = 31;
+
+        public int getExitCode() {
+            return EXIT_CODE;
+        }
     }
 
     public static class UnsupportedOption extends SOPGPException {
 
+        public static final int EXIT_CODE = 37;
+
+        public int getExitCode() {
+            return EXIT_CODE;
+        }
     }
 
     public static class BadData extends SOPGPException {
 
+        public static final int EXIT_CODE = 41;
+
         public BadData(Throwable e) {
             super(e);
+        }
+
+        public int getExitCode() {
+            return EXIT_CODE;
         }
     }
 
     public static class ExpectedText extends SOPGPException {
 
+        public static final int EXIT_CODE = 53;
+
+        public int getExitCode() {
+            return EXIT_CODE;
+        }
     }
 
     public static class OutputExists extends SOPGPException {
@@ -96,5 +148,10 @@ public class SOPGPException extends Exception {
 
     public static class NotImplemented extends SOPGPException {
 
+        public static final int EXIT_CODE = 69;
+
+        public int getExitCode() {
+            return EXIT_CODE;
+        }
     }
 }
