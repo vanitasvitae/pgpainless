@@ -17,4 +17,13 @@ package sop;
 
 public class Result<T> {
 
+    private final T item;
+
+    public Result(T item) {
+        this.item = item;
+    }
+
+    public T get() {
+        return item;
+    }
 }

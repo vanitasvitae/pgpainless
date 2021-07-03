@@ -15,9 +15,15 @@
  */
 package sop.cli.picocli.commands;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import picocli.CommandLine;
+import sop.Ready;
+import sop.cli.picocli.SopCLI;
+import sop.exception.SOPGPException;
+import sop.operation.GenerateKey;
 
 @CommandLine.Command(name = "generate-key",
         description = "Generate a secret key",
@@ -30,10 +36,34 @@ public class GenerateKeyCmd implements Runnable {
     boolean armor = true;
 
     @CommandLine.Parameters(description = "User-ID, eg. \"Alice <alice@example.com>\"")
-    List<String> userId;
+    List<String> userId = new ArrayList<>();
 
     @Override
     public void run() {
+        GenerateKey generateKey = SopCLI.getSop().generateKey();
+        for (String userId : userId) {
+            generateKey.userId(userId);
+        }
 
+        if (!armor) {
+            generateKey.noArmor();
+        }
+
+        try {
+            Ready ready = generateKey.generate();
+            ready.writeTo(System.out);
+        } catch (SOPGPException.MissingArg missingArg) {
+            System.err.println("Missing argument.");
+            missingArg.printStackTrace();
+            System.exit(missingArg.getExitCode());
+        } catch (SOPGPException.UnsupportedAsymmetricAlgo unsupportedAsymmetricAlgo) {
+            System.err.println("Unsupported asymmetric algorithm.");
+            unsupportedAsymmetricAlgo.printStackTrace();
+            System.exit(unsupportedAsymmetricAlgo.getExitCode());
+        } catch (IOException e) {
+            System.err.println("IO Error.");
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 }

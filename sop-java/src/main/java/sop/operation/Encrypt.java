@@ -15,9 +15,11 @@
  */
 package sop.operation;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import sop.Ready;
 import sop.enums.EncryptAs;
 import sop.exception.SOPGPException;
 
@@ -28,8 +30,7 @@ public interface Encrypt {
      *
      * @return builder instance
      */
-    Encrypt noArmor()
-            throws SOPGPException.UnsupportedOption;
+    Encrypt noArmor();
 
     /**
      * Sets encryption mode.
@@ -49,7 +50,8 @@ public interface Encrypt {
     Encrypt signWith(InputStream key)
             throws SOPGPException.KeyIsProtected,
             SOPGPException.CertCannotSign,
-            SOPGPException.UnsupportedAsymmetricAlgo;
+            SOPGPException.UnsupportedAsymmetricAlgo,
+            SOPGPException.BadData;
 
     /**
      * Encrypt with the given password.
@@ -77,6 +79,6 @@ public interface Encrypt {
      * @param plaintext plaintext
      * @return input stream containing the ciphertext
      */
-    OutputStream plaintext(InputStream plaintext)
-            throws SOPGPException.ExpectedText;
+    Ready plaintext(InputStream plaintext)
+        throws IOException;
 }

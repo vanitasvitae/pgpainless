@@ -69,6 +69,21 @@ public class ArmorUtils {
         return sb.toString();
     }
 
+    public static ArmoredOutputStream toAsciiArmoredStream(PGPKeyRing keyRing, OutputStream outputStream) {
+        MultiMap<String, String> header = keyToHeader(keyRing);
+        return toAsciiArmoredStream(outputStream, header);
+    }
+
+    public static ArmoredOutputStream toAsciiArmoredStream(OutputStream outputStream, MultiMap<String, String> header) {
+        ArmoredOutputStream armoredOutputStream = ArmoredOutputStreamFactory.get(outputStream);
+        for (String headerKey : header.keySet()) {
+            for (String headerValue : header.get(headerKey)) {
+                armoredOutputStream.addHeader(headerKey, headerValue);
+            }
+        }
+        return armoredOutputStream;
+    }
+
     public static String toAsciiArmoredString(PGPPublicKeyRingCollection publicKeyRings) throws IOException {
         StringBuilder sb = new StringBuilder();
         for (Iterator<PGPPublicKeyRing> iterator = publicKeyRings.iterator(); iterator.hasNext(); ) {
@@ -125,14 +140,7 @@ public class ArmorUtils {
 
     public static String toAsciiArmoredString(InputStream inputStream, MultiMap<String, String> additionalHeaderValues) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ArmoredOutputStream armor = ArmoredOutputStreamFactory.get(out);
-        if (additionalHeaderValues != null) {
-            for (String header : additionalHeaderValues.keySet()) {
-                for (String value : additionalHeaderValues.get(header)) {
-                    armor.addHeader(header, value);
-                }
-            }
-        }
+        ArmoredOutputStream armor = toAsciiArmoredStream(out, additionalHeaderValues);
         Streams.pipeAll(inputStream, armor);
         armor.close();
 

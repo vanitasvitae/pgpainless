@@ -36,7 +36,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.pgpainless.PGPainless;
 import org.pgpainless.cli.PGPainlessCLI;
-import picocli.CommandLine;
 
 public class ArmorTest {
 
@@ -61,7 +60,7 @@ public class ArmorTest {
         System.setIn(new ByteArrayInputStream(bytes));
         ByteArrayOutputStream armorOut = new ByteArrayOutputStream();
         System.setOut(new PrintStream(armorOut));
-        new CommandLine(new PGPainlessCLI()).execute("armor");
+        PGPainlessCLI.execute("armor");
 
         PGPSecretKeyRing armored = PGPainless.readKeyRing().secretKeyRing(armorOut.toString());
         assertArrayEquals(secretKey.getEncoded(), armored.getEncoded());
@@ -77,7 +76,7 @@ public class ArmorTest {
         System.setIn(new ByteArrayInputStream(bytes));
         ByteArrayOutputStream armorOut = new ByteArrayOutputStream();
         System.setOut(new PrintStream(armorOut));
-        new CommandLine(new PGPainlessCLI()).execute("armor");
+        PGPainlessCLI.execute("armor");
 
         PGPPublicKeyRing armored = PGPainless.readKeyRing().publicKeyRing(armorOut.toString());
         assertArrayEquals(publicKey.getEncoded(), armored.getEncoded());
@@ -90,7 +89,7 @@ public class ArmorTest {
         System.setIn(new ByteArrayInputStream(message.getBytes(StandardCharsets.UTF_8)));
         ByteArrayOutputStream armorOut = new ByteArrayOutputStream();
         System.setOut(new PrintStream(armorOut));
-        new CommandLine(new PGPainlessCLI()).execute("armor");
+        PGPainlessCLI.execute("armor");
 
         String armored = armorOut.toString();
 
@@ -110,7 +109,7 @@ public class ArmorTest {
         System.setIn(new ByteArrayInputStream(armored.getBytes(StandardCharsets.UTF_8)));
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         System.setOut(new PrintStream(out));
-        new CommandLine(new PGPainlessCLI()).execute("armor");
+        PGPainlessCLI.execute("armor");
 
         assertEquals(armored, out.toString());
     }
@@ -127,7 +126,7 @@ public class ArmorTest {
         System.setIn(new ByteArrayInputStream(armored.getBytes(StandardCharsets.UTF_8)));
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         System.setOut(new PrintStream(out));
-        new CommandLine(new PGPainlessCLI()).execute("armor", "--allow-nested");
+        PGPainlessCLI.execute("armor", "--allow-nested");
 
         assertNotEquals(armored, out.toString());
         assertTrue(out.toString().contains(

@@ -15,24 +15,24 @@
  */
 package org.pgpainless.sop;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.io.OutputStream;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPSecretKeyRing;
 import org.pgpainless.PGPainless;
 import org.pgpainless.key.modification.secretkeyring.SecretKeyRingEditorInterface;
 import org.pgpainless.key.protection.SecretKeyRingProtector;
 import org.pgpainless.util.ArmorUtils;
-import sop.operation.GenerateKey;
+import sop.Ready;
 import sop.exception.SOPGPException;
+import sop.operation.GenerateKey;
 
 public class GenerateKeyImpl implements GenerateKey {
 
@@ -52,7 +52,7 @@ public class GenerateKeyImpl implements GenerateKey {
     }
 
     @Override
-    public InputStream generate() throws SOPGPException.MissingArg, SOPGPException.UnsupportedAsymmetricAlgo, IOException {
+    public Ready generate() throws SOPGPException.MissingArg, SOPGPException.UnsupportedAsymmetricAlgo, IOException {
         Iterator<String> userIdIterator = userIds.iterator();
         if (!userIdIterator.hasNext()) {
             throw new SOPGPException.MissingArg("Missing user-id.");
@@ -73,13 +73,19 @@ public class GenerateKeyImpl implements GenerateKey {
                 key = editor.done();
             }
 
-            if (armor) {
-                String armored = ArmorUtils.toAsciiArmoredString(key);
-                return new ByteArrayInputStream(armored.getBytes(StandardCharsets.UTF_8));
-            } else {
-                return new ByteArrayInputStream(key.getEncoded());
-            }
-
+            PGPSecretKeyRing finalKey = key;
+            return new Ready() {
+                @Override
+                public void writeTo(OutputStream outputStream) throws IOException {
+                    if (armor) {
+                        ArmoredOutputStream armoredOutputStream = ArmorUtils.toAsciiArmoredStream(finalKey, outputStream);
+                        finalKey.encode(armoredOutputStream);
+                        armoredOutputStream.close();
+                    } else {
+                        finalKey.encode(outputStream);
+                    }
+                }
+            };
         } catch (InvalidAlgorithmParameterException | NoSuchAlgorithmException e) {
             throw new SOPGPException.UnsupportedAsymmetricAlgo(e);
         } catch (PGPException e) {

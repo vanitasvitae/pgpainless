@@ -13,20 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package sop.operation;
+package org.pgpainless.exception;
 
-import java.io.IOException;
-import java.io.InputStream;
+import org.bouncycastle.openpgp.PGPException;
 
-import sop.Ready;
-
-public interface Dearmor {
-
-    /**
-     * Dearmor armored OpenPGP data.
-     *
-     * @param data armored OpenPGP data
-     * @return input stream of unarmored data
-     */
-    Ready data(InputStream data) throws IOException;
+public class KeyCannotSignException extends PGPException {
+    public KeyCannotSignException(String message) {
+        super(message);
+    }
 }

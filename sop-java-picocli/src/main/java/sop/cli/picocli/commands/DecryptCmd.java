@@ -18,16 +18,21 @@ package sop.cli.picocli.commands;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import picocli.CommandLine;
+import sop.DecryptionResult;
 import sop.ReadyWithResult;
 import sop.SessionKey;
+import sop.cli.picocli.DateParser;
 import sop.cli.picocli.SopCLI;
 import sop.exception.SOPGPException;
 import sop.operation.Decrypt;
@@ -49,13 +54,13 @@ public class DecryptCmd implements Runnable {
             names = {"--with-session-key"},
             description = "Enables decryption of the \"CIPHERTEXT\" using the session key directly against the \"SEIPD\" packet",
             paramLabel = "SESSIONKEY")
-    String[] withSessionKey;
+    List<String> withSessionKey = new ArrayList<>();
 
     @CommandLine.Option(
             names = {"--with-password"},
             description = "Enables decryption based on any \"SKESK\" packets in the \"CIPHERTEXT\"",
             paramLabel = "PASSWORD")
-    String[] withPassword;
+    List<String> withPassword = new ArrayList<>();
 
     @CommandLine.Option(names = {"--verify-out"},
             description = "Produces signature verification status to the designated file",
@@ -65,7 +70,7 @@ public class DecryptCmd implements Runnable {
     @CommandLine.Option(names = {"--verify-with"},
             description = "Certificates whose signatures would be acceptable for signatures over this message",
             paramLabel = "CERT")
-    File[] certs;
+    List<File> certs = new ArrayList<>();
 
     @CommandLine.Option(names = {"--not-before"},
             description = "ISO-8601 formatted UTC date (eg. '2020-11-23T16:35Z)\n" +
@@ -85,7 +90,7 @@ public class DecryptCmd implements Runnable {
     @CommandLine.Parameters(index = "0..*",
             description = "Secret keys to attempt decryption with",
             paramLabel = "KEY")
-    File[] keys;
+    List<File> keys = new ArrayList<>();
 
     @Override
     public void run() {
@@ -101,8 +106,26 @@ public class DecryptCmd implements Runnable {
         setDecryptWith(keys, decrypt);
 
         try {
-            ReadyWithResult<?> result = decrypt.ciphertext(System.in);
-            result.writeTo(System.out);
+            ReadyWithResult<DecryptionResult> ready = decrypt.ciphertext(System.in);
+            DecryptionResult result = ready.writeTo(System.out);
+            if (sessionKeyOut != null) {
+                if (sessionKeyOut.exists()) {
+                    System.err.println("File " + sessionKeyOut.getAbsolutePath() + " already exists.");
+                    new SOPGPException.OutputExists().printStackTrace();
+                    System.exit(1);
+                }
+
+                try (FileOutputStream outputStream = new FileOutputStream(sessionKeyOut)) {
+                    if (!result.getSessionKey().isPresent()) {
+                        System.err.println("Session key not extracted. Possibly the feature is not supported.");
+                        System.exit(SOPGPException.UnsupportedOption.EXIT_CODE);
+                    } else {
+                        SessionKey sessionKey = result.getSessionKey().get();
+                        outputStream.write(sessionKey.getAlgorithm());
+                        outputStream.write(sessionKey.getKey());
+                    }
+                }
+            }
         } catch (SOPGPException.BadData badData) {
             System.err.println("No valid OpenPGP message found on Standard Input.");
             badData.printStackTrace();
@@ -118,11 +141,7 @@ public class DecryptCmd implements Runnable {
         }
     }
 
-    private void setDecryptWith(File[] keys, Decrypt decrypt) {
-        if (keys == null) {
-            return;
-        }
-
+    private void setDecryptWith(List<File> keys, Decrypt decrypt) {
         for (File key : keys) {
             try (FileInputStream keyIn = new FileInputStream(key)) {
                 decrypt.withKey(keyIn);
@@ -150,11 +169,7 @@ public class DecryptCmd implements Runnable {
         }
     }
 
-    private void setVerifyWith(File[] certs, Decrypt decrypt) {
-        if (certs == null) {
-            return;
-        }
-
+    private void setVerifyWith(List<File> certs, Decrypt decrypt) {
         for (File cert : certs) {
             try (FileInputStream certIn = new FileInputStream(cert)) {
                 decrypt.verifyWithCert(certIn);
@@ -196,11 +211,7 @@ public class DecryptCmd implements Runnable {
         System.exit(SOPGPException.UnsupportedOption.EXIT_CODE);
     }
 
-    private void setWithSessionKeys(String[] withSessionKey, Decrypt decrypt) {
-        if (withSessionKey == null) {
-            return;
-        }
-
+    private void setWithSessionKeys(List<String> withSessionKey, Decrypt decrypt) {
         for (String sessionKey : withSessionKey) {
             byte[] bytes = sessionKey.getBytes(StandardCharsets.UTF_8);
             byte algorithm = bytes[0];
@@ -218,10 +229,7 @@ public class DecryptCmd implements Runnable {
         }
     }
 
-    private void setWithPasswords(String[] withPassword, Decrypt decrypt) {
-        if (withPassword == null) {
-            return;
-        }
+    private void setWithPasswords(List<String> withPassword, Decrypt decrypt) {
         for (String password : withPassword) {
             try {
                 decrypt.withPassword(password);
@@ -242,13 +250,13 @@ public class DecryptCmd implements Runnable {
             return;
         }
 
-        Date notAfterDate = parseDateOrExit(notAfter, "Cannot parse value of option '--not-after'.");
+        Date notAfterDate = DateParser.parseNotAfter(notAfter);
         try {
             decrypt.verifyNotAfter(notAfterDate);
         } catch (SOPGPException.UnsupportedOption unsupportedOption) {
             System.err.println("Option '--not-after' not supported.");
             unsupportedOption.printStackTrace();
-            System.exit(unsupportedOption.getExitCode());
+            // System.exit(unsupportedOption.getExitCode());
         }
     }
 
@@ -257,24 +265,13 @@ public class DecryptCmd implements Runnable {
             return;
         }
 
-        Date notBeforeDate = parseDateOrExit(notBefore, "Cannot parse value of option '--not-before'.");
+        Date notBeforeDate = DateParser.parseNotBefore(notBefore);
         try {
             decrypt.verifyNotBefore(notBeforeDate);
         } catch (SOPGPException.UnsupportedOption unsupportedOption) {
             System.err.println("Option '--not-before' not supported.");
             unsupportedOption.printStackTrace();
-            System.exit(unsupportedOption.getExitCode());
-        }
-    }
-
-    private Date parseDateOrExit(String date, String errorMessage) {
-        try {
-            return df.parse(date);
-        } catch (ParseException e) {
-            System.err.println(errorMessage);
-            e.printStackTrace();
-            System.exit(1);
-            return null;
+            // System.exit(unsupportedOption.getExitCode());
         }
     }
 }

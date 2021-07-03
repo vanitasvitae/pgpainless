@@ -22,6 +22,6 @@ public class DummyTest {
 
     @Test
     public void dummyTest() {
-        new CommandLine(new PGPainlessCLI()).execute("generate-key", "Ed Snowden <citizen4@lavabit.com>");
+        PGPainlessCLI.execute("generate-key", "Ed Snowden <citizen4@lavabit.com>");
     }
 }

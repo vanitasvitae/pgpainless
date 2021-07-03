@@ -18,6 +18,7 @@ package sop.operation;
 import java.io.IOException;
 import java.io.InputStream;
 
+import sop.Ready;
 import sop.exception.SOPGPException;
 
 public interface GenerateKey {
@@ -42,5 +43,5 @@ public interface GenerateKey {
      *
      * @return key
      */
-    InputStream generate() throws SOPGPException.MissingArg, SOPGPException.UnsupportedAsymmetricAlgo, IOException;
+    Ready generate() throws SOPGPException.MissingArg, SOPGPException.UnsupportedAsymmetricAlgo, IOException;
 }

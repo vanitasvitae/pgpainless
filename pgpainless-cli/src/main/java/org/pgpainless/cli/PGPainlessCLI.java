@@ -25,8 +25,12 @@ public class PGPainlessCLI {
     }
 
     public static void main(String[] args) {
+        int result = execute(args);
+        System.exit(result);
+    }
+
+    public static int execute(String... args) {
         SopCLI.setSopInstance(new SOPImpl());
-        int code = SopCLI.execute(args);
-        System.exit(code);
+        return SopCLI.execute(args);
     }
 }

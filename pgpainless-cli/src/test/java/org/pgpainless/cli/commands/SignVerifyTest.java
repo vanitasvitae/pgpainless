@@ -95,7 +95,7 @@ public class SignVerifyTest {
         assertTrue(sigFile.createNewFile());
         FileOutputStream sigOut = new FileOutputStream(sigFile);
         System.setOut(new PrintStream(sigOut));
-        new CommandLine(new PGPainlessCLI()).execute("sign", "--armor", aliceKeyFile.getAbsolutePath());
+        PGPainlessCLI.execute("sign", "--armor", aliceKeyFile.getAbsolutePath());
         sigOut.close();
 
         // verify test data signature
@@ -103,7 +103,7 @@ public class SignVerifyTest {
         System.setOut(new PrintStream(verifyOut));
         dataIn = new FileInputStream(dataFile);
         System.setIn(dataIn);
-        new CommandLine(new PGPainlessCLI()).execute("verify", sigFile.getAbsolutePath(), aliceCertFile.getAbsolutePath());
+        PGPainlessCLI.execute("verify", sigFile.getAbsolutePath(), aliceCertFile.getAbsolutePath());
         dataIn.close();
 
         // Test verification output

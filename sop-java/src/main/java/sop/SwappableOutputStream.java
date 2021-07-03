@@ -15,6 +15,7 @@
  */
 package sop;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -27,7 +28,7 @@ public class SwappableOutputStream extends OutputStream {
     }
 
     public SwappableOutputStream() {
-
+        this(new ByteArrayOutputStream());
     }
 
     public void setUnderlyingStream(OutputStream underlying) {

@@ -19,8 +19,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import picocli.CommandLine;
+import sop.Ready;
 import sop.cli.picocli.SopCLI;
 import sop.enums.SignAs;
 import sop.exception.SOPGPException;
@@ -43,7 +46,7 @@ public class SignCmd implements Runnable {
     @CommandLine.Parameters(description = "Secret keys used for signing",
             paramLabel = "KEY",
             arity = "1..*")
-    File[] secretKeyFile;
+    List<File> secretKeyFile = new ArrayList<>();
 
     @Override
     public void run() {
@@ -70,6 +73,15 @@ public class SignCmd implements Runnable {
 
         if (!armor) {
             sign.noArmor();
+        }
+
+        try {
+            Ready ready = sign.data(System.in);
+            ready.writeTo(System.out);
+        } catch (IOException e) {
+            System.err.println("IO Error.");
+            e.printStackTrace();
+            System.exit(1);
         }
     }
 }

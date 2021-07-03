@@ -28,6 +28,8 @@ dependencies {
     implementation(project(":sop-java-picocli"))
     implementation 'info.picocli:picocli:4.5.2'
 
+    testImplementation(project(":pgpainless-core"))
+
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
 
@@ -42,7 +44,7 @@ dependencies {
     implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.2'
 }
 
-mainClassName = 'org.pgpainless.sop.PGPainlessCLI'
+mainClassName = 'org.pgpainless.cli.PGPainlessCLI'
 
 jar {
     manifest {

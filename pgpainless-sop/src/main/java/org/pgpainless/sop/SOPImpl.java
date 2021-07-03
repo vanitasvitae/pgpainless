@@ -45,17 +45,17 @@ public class SOPImpl implements SOP {
 
     @Override
     public Sign sign() {
-        return null;
+        return new SignImpl();
     }
 
     @Override
     public Verify verify() {
-        return null;
+        return new VerifyImpl();
     }
 
     @Override
     public Encrypt encrypt() {
-        return null;
+        return new EncryptImpl();
     }
 
     @Override
@@ -65,11 +65,11 @@ public class SOPImpl implements SOP {
 
     @Override
     public Armor armor() {
-        return null;
+        return new ArmorImpl();
     }
 
     @Override
     public Dearmor dearmor() {
-        return null;
+        return new DearmorImpl();
     }
 }

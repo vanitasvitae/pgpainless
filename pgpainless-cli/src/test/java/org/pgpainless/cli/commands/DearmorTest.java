@@ -34,7 +34,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.pgpainless.PGPainless;
 import org.pgpainless.cli.PGPainlessCLI;
-import picocli.CommandLine;
 
 public class DearmorTest {
 
@@ -59,7 +58,7 @@ public class DearmorTest {
         System.setIn(new ByteArrayInputStream(armored.getBytes(StandardCharsets.UTF_8)));
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         System.setOut(new PrintStream(out));
-        new CommandLine(new PGPainlessCLI()).execute("dearmor");
+        PGPainlessCLI.execute("dearmor");
 
         assertArrayEquals(secretKey.getEncoded(), out.toByteArray());
     }
@@ -75,7 +74,7 @@ public class DearmorTest {
         System.setIn(new ByteArrayInputStream(armored.getBytes(StandardCharsets.UTF_8)));
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         System.setOut(new PrintStream(out));
-        new CommandLine(new PGPainlessCLI()).execute("dearmor");
+        PGPainlessCLI.execute("dearmor");
 
         assertArrayEquals(certificate.getEncoded(), out.toByteArray());
     }
@@ -92,7 +91,7 @@ public class DearmorTest {
         System.setIn(new ByteArrayInputStream(armored.getBytes(StandardCharsets.UTF_8)));
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         System.setOut(new PrintStream(out));
-        new CommandLine(new PGPainlessCLI()).execute("dearmor");
+        PGPainlessCLI.execute("dearmor");
 
         assertEquals("Hello, World\n", out.toString());
     }

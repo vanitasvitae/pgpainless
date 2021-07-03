@@ -18,7 +18,9 @@ package sop.operation;
 import java.io.InputStream;
 import java.util.Date;
 
-public interface Verify {
+import sop.exception.SOPGPException;
+
+public interface Verify extends VerifySignatures {
 
     /**
      * Makes the SOP implementation consider signatures before this date invalid.
@@ -26,7 +28,7 @@ public interface Verify {
      * @param timestamp timestamp
      * @return builder instance
      */
-    Verify notBefore(Date timestamp);
+    Verify notBefore(Date timestamp) throws SOPGPException.UnsupportedOption;
 
     /**
      * Makes the SOP implementation consider signatures after this date invalid.
@@ -34,7 +36,7 @@ public interface Verify {
      * @param timestamp timestamp
      * @return builder instance
      */
-    Verify notAfter(Date timestamp);
+    Verify notAfter(Date timestamp) throws SOPGPException.UnsupportedOption;
 
     /**
      * Adds the verification cert.
@@ -42,7 +44,7 @@ public interface Verify {
      * @param cert input stream containing the encoded cert
      * @return builder instance
      */
-    Verify cert(InputStream cert);
+    Verify cert(InputStream cert) throws SOPGPException.BadData;
 
     /**
      * Provides the signatures.
@@ -50,6 +52,6 @@ public interface Verify {
      *
      * @return builder instance
      */
-    VerifySignatures signatures(InputStream signatures);
+    VerifySignatures signatures(InputStream signatures) throws SOPGPException.BadData;
 
 }

@@ -24,16 +24,16 @@ public class ExitCodeTest {
 
     @Test
     public void testUnknownCommand_69() {
-        assertEquals(69, new CommandLine(new PGPainlessCLI()).execute("generate-kex"));
+        assertEquals(69, PGPainlessCLI.execute("generate-kex"));
     }
 
     @Test
     public void testCommandWithUnknownOption_37() {
-        assertEquals(37, new CommandLine(new PGPainlessCLI()).execute("generate-key", "-k", "\"k is unknown\""));
+        assertEquals(37, PGPainlessCLI.execute("generate-key", "-k", "\"k is unknown\""));
     }
 
     @Test
     public void successfulVersion_0 () {
-        assertEquals(0, new CommandLine(new PGPainlessCLI()).execute("version"));
+        assertEquals(0, PGPainlessCLI.execute("version"));
     }
 }
