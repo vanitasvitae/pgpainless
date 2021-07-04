@@ -1,7 +1,8 @@
 rootProject.name = 'PGPainless'
 
 include 'pgpainless-core',
+        'sop-java',
         'pgpainless-sop',
+        'sop-java-picocli',
         'pgpainless-cli'
-include 'sop-java', 'sop-java-picocli'
 

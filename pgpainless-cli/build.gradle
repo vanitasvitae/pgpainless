@@ -60,3 +60,4 @@ jar {
     }
 }
 
+tasks."jar".dependsOn(":pgpainless-core:assemble")
