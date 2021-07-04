@@ -32,7 +32,7 @@ import org.pgpainless.encryption_signing.SigningOptions;
 import org.pgpainless.exception.WrongPassphraseException;
 import org.pgpainless.key.protection.SecretKeyRingProtector;
 import org.pgpainless.util.Passphrase;
-import sop.ProxyOutputStream;
+import sop.util.ProxyOutputStream;
 import sop.Ready;
 import sop.enums.EncryptAs;
 import sop.exception.SOPGPException;

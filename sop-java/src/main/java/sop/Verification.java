@@ -17,6 +17,8 @@ package sop;
 
 import java.util.Date;
 
+import sop.util.UTCUtil;
+
 public class Verification {
 
     private final Date creationTime;

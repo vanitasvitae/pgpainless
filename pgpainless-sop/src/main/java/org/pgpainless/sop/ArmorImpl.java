@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PushbackInputStream;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import org.bouncycastle.bcpg.ArmoredOutputStream;
@@ -32,7 +32,7 @@ import sop.operation.Armor;
 
 public class ArmorImpl implements Armor {
 
-    public static final byte[] ARMOR_START = "-----BEGIN PGP".getBytes(StandardCharsets.UTF_8);
+    public static final byte[] ARMOR_START = "-----BEGIN PGP".getBytes(Charset.forName("UTF8"));
 
     boolean allowNested = false;
 
