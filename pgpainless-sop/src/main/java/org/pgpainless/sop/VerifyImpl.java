@@ -1,3 +1,18 @@
+/*
+ * Copyright 2021 Paul Schaub.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.pgpainless.sop;
 
 import java.io.IOException;
@@ -15,8 +30,7 @@ import org.pgpainless.decryption_verification.ConsumerOptions;
 import org.pgpainless.decryption_verification.DecryptionStream;
 import org.pgpainless.decryption_verification.OpenPgpMetadata;
 import org.pgpainless.exception.NotYetImplementedException;
-import org.pgpainless.key.OpenPgpV4Fingerprint;
-import org.pgpainless.signature.SignatureUtils;
+import org.pgpainless.key.SubkeyIdentifier;
 import sop.Result;
 import sop.Verification;
 import sop.exception.SOPGPException;
@@ -60,18 +74,16 @@ public class VerifyImpl implements Verify {
 
     @Override
     public VerifyImpl signatures(InputStream signatures) throws SOPGPException.BadData {
-        List<PGPSignature> signatureList;
         try {
-            signatureList = SignatureUtils.readSignatures(signatures);
+            options.addVerificationOfDetachedSignatures(signatures);
         } catch (IOException | PGPException e) {
             throw new SOPGPException.BadData(e);
         }
-        options.addVerificationOfDetachedSignatures(signatureList);
         return this;
     }
 
     @Override
-    public Result<List<Verification>> data(InputStream data) throws IOException, SOPGPException.NoSignature {
+    public Result<List<Verification>> data(InputStream data) throws IOException, SOPGPException.NoSignature, SOPGPException.BadData {
         DecryptionStream decryptionStream;
         try {
             decryptionStream = PGPainless.decryptAndOrVerify()
@@ -81,23 +93,33 @@ public class VerifyImpl implements Verify {
             Streams.drain(decryptionStream);
             decryptionStream.close();
 
-            OpenPgpMetadata result = decryptionStream.getResult();
-            List<Verification> verifications = new ArrayList<>();
-            for (OpenPgpV4Fingerprint fingerprint : result.getVerifiedSignatures().keySet()) {
-                PGPSignature signature = result.getVerifiedSignatures().get(fingerprint);
-                verifications.add(new Verification(
-                        signature.getCreationTime(),
-                        // TODO: Use correct fingerprints
-                        fingerprint.toString(),
-                        fingerprint.toString()));
-            }
-            if (verifications.isEmpty()) {
-                throw new SOPGPException.NoSignature();
+            OpenPgpMetadata metadata = decryptionStream.getResult();
+            List<Verification> verificationList = new ArrayList<>();
+
+            for (SubkeyIdentifier verifiedSigningKey : metadata.getVerifiedSignatures().keySet()) {
+                PGPSignature signature = metadata.getVerifiedSignatures().get(verifiedSigningKey);
+                Date verifyNotBefore = options.getVerifyNotBefore();
+                Date verifyNotAfter = options.getVerifyNotAfter();
+
+                if (verifyNotAfter == null || !signature.getCreationTime().after(verifyNotAfter)) {
+                    if (verifyNotBefore == null || !signature.getCreationTime().before(verifyNotBefore)) {
+                        verificationList.add(new Verification(
+                                signature.getCreationTime(),
+                                verifiedSigningKey.getSubkeyFingerprint().toString(),
+                                verifiedSigningKey.getPrimaryKeyFingerprint().toString()));
+                    }
+                }
             }
 
-            return new Result<>(verifications);
+            if (!options.getCertificates().isEmpty()) {
+                if (verificationList.isEmpty()) {
+                    throw new SOPGPException.NoSignature();
+                }
+            }
+
+            return new Result<>(verificationList);
         } catch (PGPException e) {
-            throw new IOException(e);
+            throw new SOPGPException.BadData(e);
         }
     }
 }

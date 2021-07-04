@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -27,6 +26,7 @@ import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPPublicKeyRingCollection;
 import org.bouncycastle.openpgp.PGPSecretKeyRing;
 import org.bouncycastle.openpgp.PGPSecretKeyRingCollection;
+import org.bouncycastle.openpgp.PGPSignature;
 import org.bouncycastle.util.io.Streams;
 import org.pgpainless.PGPainless;
 import org.pgpainless.decryption_verification.ConsumerOptions;
@@ -38,11 +38,11 @@ import org.pgpainless.key.info.KeyRingInfo;
 import org.pgpainless.key.protection.SecretKeyRingProtector;
 import org.pgpainless.util.Passphrase;
 import sop.DecryptionResult;
-import sop.Verification;
-import sop.operation.Decrypt;
 import sop.ReadyWithResult;
 import sop.SessionKey;
+import sop.Verification;
 import sop.exception.SOPGPException;
+import sop.operation.Decrypt;
 
 public class DecryptImpl implements Decrypt {
 
@@ -154,18 +154,30 @@ public class DecryptImpl implements Decrypt {
                 Streams.pipeAll(decryptionStream, outputStream);
                 decryptionStream.close();
                 OpenPgpMetadata metadata = decryptionStream.getResult();
+
+                List<Verification> verificationList = new ArrayList<>();
+                for (SubkeyIdentifier verifiedSigningKey : metadata.getVerifiedSignatures().keySet()) {
+                    PGPSignature signature = metadata.getVerifiedSignatures().get(verifiedSigningKey);
+                    Date verifyNotBefore = consumerOptions.getVerifyNotBefore();
+                    Date verifyNotAfter = consumerOptions.getVerifyNotAfter();
+
+                    if (verifyNotAfter == null || !signature.getCreationTime().after(verifyNotAfter)) {
+                        if (verifyNotBefore == null || !signature.getCreationTime().before(verifyNotBefore)) {
+                            verificationList.add(new Verification(
+                                    signature.getCreationTime(),
+                                    verifiedSigningKey.getSubkeyFingerprint().toString(),
+                                    verifiedSigningKey.getPrimaryKeyFingerprint().toString()));
+                        }
+                    }
+                }
+
                 if (!consumerOptions.getCertificates().isEmpty()) {
-                    if (metadata.getVerifiedSignatures().isEmpty()) {
+                    if (verificationList.isEmpty()) {
                         throw new SOPGPException.NoSignature();
                     }
                 }
 
-                List<Verification> verificationList = new ArrayList<>();
-                for (SubkeyIdentifier verifiedSigningKey : metadata.get)
-
-                return new DecryptionResult(null, );
-                // TODO: Extract verifications from metadata.
-                return new DecryptionResult(null, Collections.emptyList());
+                return new DecryptionResult(null, verificationList);
             }
         };
     }
