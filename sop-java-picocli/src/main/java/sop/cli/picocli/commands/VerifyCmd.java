@@ -119,6 +119,10 @@ public class VerifyCmd implements Runnable {
         Result<List<Verification>> verifications = null;
         try {
             verifications = verify.data(System.in);
+        } catch (SOPGPException.NoSignature e) {
+            System.err.println("No verifiable signature found.");
+            e.printStackTrace();
+            System.exit(e.getExitCode());
         } catch (IOException ioException) {
             System.err.println("IO Error.");
             ioException.printStackTrace();

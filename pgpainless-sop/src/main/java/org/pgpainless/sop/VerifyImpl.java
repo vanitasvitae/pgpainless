@@ -71,7 +71,7 @@ public class VerifyImpl implements Verify {
     }
 
     @Override
-    public Result<List<Verification>> data(InputStream data) throws IOException {
+    public Result<List<Verification>> data(InputStream data) throws IOException, SOPGPException.NoSignature {
         DecryptionStream decryptionStream;
         try {
             decryptionStream = PGPainless.decryptAndOrVerify()
@@ -89,6 +89,9 @@ public class VerifyImpl implements Verify {
                         // TODO: Use correct fingerprints
                         fingerprint.toString(),
                         fingerprint.toString()));
+            }
+            if (verifications.isEmpty()) {
+                throw new SOPGPException.NoSignature();
             }
             return new Result<>(verifications);
         } catch (PGPException e) {

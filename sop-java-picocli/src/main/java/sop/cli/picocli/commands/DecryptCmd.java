@@ -138,6 +138,10 @@ public class DecryptCmd implements Runnable {
             System.err.println("IO Error.");
             e.printStackTrace();
             System.exit(1);
+        } catch (SOPGPException.NoSignature noSignature) {
+            System.err.println("No verifiable signature found.");
+            noSignature.printStackTrace();
+            System.exit(noSignature.getExitCode());
         }
     }
 

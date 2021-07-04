@@ -149,10 +149,15 @@ public class DecryptImpl implements Decrypt {
 
         return new ReadyWithResult<DecryptionResult>() {
             @Override
-            public DecryptionResult writeTo(OutputStream outputStream) throws IOException {
+            public DecryptionResult writeTo(OutputStream outputStream) throws IOException, SOPGPException.NoSignature {
                 Streams.pipeAll(decryptionStream, outputStream);
                 decryptionStream.close();
                 OpenPgpMetadata metadata = decryptionStream.getResult();
+                if (!consumerOptions.getCertificates().isEmpty()) {
+                    if (metadata.getVerifiedSignatures().isEmpty()) {
+                        throw new SOPGPException.NoSignature();
+                    }
+                }
                 // TODO: Extract verifications from metadata.
                 return new DecryptionResult(null, Collections.emptyList());
             }

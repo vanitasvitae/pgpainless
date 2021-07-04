@@ -21,8 +21,9 @@ import java.util.List;
 
 import sop.Result;
 import sop.Verification;
+import sop.exception.SOPGPException;
 
 public interface VerifySignatures {
 
-    Result<List<Verification>> data(InputStream data) throws IOException;
+    Result<List<Verification>> data(InputStream data) throws IOException, SOPGPException.NoSignature;
 }

@@ -1,5 +1,7 @@
 package org.pgpainless.sop;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -89,17 +91,17 @@ public class EncryptImpl implements Encrypt {
         producerOptions.setAsciiArmor(armor);
 
         try {
-            SwappableOutputStream swappableOutputStream = new SwappableOutputStream();
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             EncryptionStream encryptionStream = PGPainless.encryptAndOrSign()
-                    .onOutputStream(swappableOutputStream)
+                    .onOutputStream(buffer)
                     .withOptions(producerOptions);
 
             return new Ready() {
                 @Override
                 public void writeTo(OutputStream outputStream) throws IOException {
-                    swappableOutputStream.setUnderlyingStream(outputStream);
                     Streams.pipeAll(plaintext, encryptionStream);
                     encryptionStream.close();
+                    Streams.pipeAll(new ByteArrayInputStream(buffer.toByteArray()), outputStream);
                 }
             };
         } catch (PGPException e) {

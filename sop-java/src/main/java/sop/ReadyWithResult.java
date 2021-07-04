@@ -19,11 +19,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import sop.exception.SOPGPException;
+
 public abstract class ReadyWithResult<T> {
 
-    public abstract T writeTo(OutputStream outputStream) throws IOException;
+    public abstract T writeTo(OutputStream outputStream) throws IOException, SOPGPException.NoSignature;
 
-    public ByteArrayAndResult<T> toBytes() throws IOException {
+    public ByteArrayAndResult<T> toBytes() throws IOException, SOPGPException.NoSignature {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         T result = writeTo(bytes);
         return new ByteArrayAndResult<>(bytes.toByteArray(), result);

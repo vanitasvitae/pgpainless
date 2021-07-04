@@ -15,6 +15,7 @@
  */
 package org.pgpainless.sop;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -23,19 +24,22 @@ import java.util.List;
 
 import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPSecretKeyRing;
+import org.bouncycastle.openpgp.PGPSignature;
 import org.bouncycastle.util.io.Streams;
 import org.pgpainless.PGPainless;
 import org.pgpainless.algorithm.DocumentSignatureType;
+import org.pgpainless.encryption_signing.EncryptionResult;
 import org.pgpainless.encryption_signing.EncryptionStream;
 import org.pgpainless.encryption_signing.ProducerOptions;
 import org.pgpainless.encryption_signing.SigningOptions;
+import org.pgpainless.key.SubkeyIdentifier;
 import org.pgpainless.key.info.KeyRingInfo;
 import org.pgpainless.key.protection.SecretKeyRingProtector;
+import org.pgpainless.util.ArmoredOutputStreamFactory;
 import sop.Ready;
-import sop.operation.Sign;
-import sop.SwappableOutputStream;
 import sop.enums.SignAs;
 import sop.exception.SOPGPException;
+import sop.operation.Sign;
 
 public class SignImpl implements Sign {
 
@@ -73,10 +77,10 @@ public class SignImpl implements Sign {
 
     @Override
     public Ready data(InputStream data) throws IOException {
-        SwappableOutputStream swappableOutputStream = new SwappableOutputStream();
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         try {
             EncryptionStream signingStream = PGPainless.encryptAndOrSign()
-                    .onOutputStream(swappableOutputStream)
+                    .onOutputStream(buffer)
                     .withOptions(ProducerOptions.sign(signingOptions)
                             .setAsciiArmor(armor));
 
@@ -88,9 +92,26 @@ public class SignImpl implements Sign {
                         throw new IllegalStateException("EncryptionStream is already closed.");
                     }
 
-                    swappableOutputStream.setUnderlyingStream(outputStream);
                     Streams.pipeAll(data, signingStream);
                     signingStream.close();
+                    EncryptionResult encryptionResult = signingStream.getResult();
+
+                    List<PGPSignature> signatures = new ArrayList<>();
+                    for (SubkeyIdentifier key : encryptionResult.getDetachedSignatures().keySet()) {
+                        signatures.addAll(encryptionResult.getDetachedSignatures().get(key));
+                    }
+
+                    OutputStream out;
+                    if (armor) {
+                        out = ArmoredOutputStreamFactory.get(outputStream);
+                    } else {
+                        out = outputStream;
+                    }
+                    for (PGPSignature sig : signatures) {
+                        sig.encode(out);
+                    }
+                    out.close();
+                    outputStream.close(); // armor out does not close underlying stream
                 }
             };
 
