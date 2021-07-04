@@ -109,9 +109,11 @@ public final class DecryptionStreamFactory {
         try {
             // Parse OpenPGP message
             inputStream = factory.processPGPPackets(objectFactory, 1);
-        } catch (MissingLiteralDataException e) {
-            // Not an OpenPGP message. Reset the buffered stream to parse the message as arbitrary binary data
+        } catch (MissingLiteralDataException | IOException e) {
+            // MissingLiteralDataException: Not an OpenPGP message.
+            //  Reset the buffered stream to parse the message as arbitrary binary data
             //  to allow for detached signature verification.
+            // IOException: We falsely assumed the data to be armored.
             bufferedIn.reset();
             inputStream = bufferedIn;
         }
