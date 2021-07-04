@@ -25,7 +25,7 @@ import java.util.TimeZone;
  */
 public class UTCUtil {
 
-    public static SimpleDateFormat UTC_PARSER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+    public static SimpleDateFormat UTC_PARSER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
     static {
         UTC_PARSER.setTimeZone(TimeZone.getTimeZone("UTC"));
     }

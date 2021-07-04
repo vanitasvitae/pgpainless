@@ -19,8 +19,8 @@ import org.pgpainless.encryption_signing.SigningOptions;
 import org.pgpainless.exception.WrongPassphraseException;
 import org.pgpainless.key.protection.SecretKeyRingProtector;
 import org.pgpainless.util.Passphrase;
+import sop.ProxyOutputStream;
 import sop.Ready;
-import sop.SwappableOutputStream;
 import sop.enums.EncryptAs;
 import sop.exception.SOPGPException;
 import sop.operation.Encrypt;
@@ -75,7 +75,9 @@ public class EncryptImpl implements Encrypt {
     @Override
     public Encrypt withCert(InputStream cert) throws SOPGPException.CertCannotEncrypt, SOPGPException.UnsupportedAsymmetricAlgo, SOPGPException.BadData {
         try {
-            PGPPublicKeyRingCollection certificates = PGPainless.readKeyRing().publicKeyRingCollection(cert);
+            PGPPublicKeyRingCollection certificates = PGPainless.readKeyRing()
+                    .keyRingCollection(cert, false)
+                    .getPgpPublicKeyRingCollection();
             encryptionOptions.addRecipients(certificates);
         } catch (IOException | PGPException e) {
             throw new SOPGPException.BadData(e);
@@ -91,17 +93,17 @@ public class EncryptImpl implements Encrypt {
         producerOptions.setAsciiArmor(armor);
 
         try {
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            ProxyOutputStream proxy = new ProxyOutputStream();
             EncryptionStream encryptionStream = PGPainless.encryptAndOrSign()
-                    .onOutputStream(buffer)
+                    .onOutputStream(proxy)
                     .withOptions(producerOptions);
 
             return new Ready() {
                 @Override
                 public void writeTo(OutputStream outputStream) throws IOException {
+                    proxy.replaceOutputStream(outputStream);
                     Streams.pipeAll(plaintext, encryptionStream);
                     encryptionStream.close();
-                    Streams.pipeAll(new ByteArrayInputStream(buffer.toByteArray()), outputStream);
                 }
             };
         } catch (PGPException e) {

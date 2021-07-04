@@ -31,7 +31,7 @@ public class VerifyImpl implements Verify {
         try {
             options.verifyNotBefore(timestamp);
         } catch (NotYetImplementedException e) {
-            throw new SOPGPException.UnsupportedOption();
+            // throw new SOPGPException.UnsupportedOption();
         }
         return this;
     }
@@ -41,7 +41,7 @@ public class VerifyImpl implements Verify {
         try {
             options.verifyNotAfter(timestamp);
         } catch (NotYetImplementedException e) {
-            throw new SOPGPException.UnsupportedOption();
+            // throw new SOPGPException.UnsupportedOption();
         }
         return this;
     }
@@ -80,6 +80,7 @@ public class VerifyImpl implements Verify {
 
             Streams.drain(decryptionStream);
             decryptionStream.close();
+
             OpenPgpMetadata result = decryptionStream.getResult();
             List<Verification> verifications = new ArrayList<>();
             for (OpenPgpV4Fingerprint fingerprint : result.getVerifiedSignatures().keySet()) {
@@ -93,6 +94,7 @@ public class VerifyImpl implements Verify {
             if (verifications.isEmpty()) {
                 throw new SOPGPException.NoSignature();
             }
+
             return new Result<>(verifications);
         } catch (PGPException e) {
             throw new IOException(e);

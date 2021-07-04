@@ -52,7 +52,7 @@ public class DecryptImpl implements Decrypt {
         try {
             consumerOptions.verifyNotBefore(timestamp);
         } catch (NotYetImplementedException e) {
-            throw new SOPGPException.UnsupportedOption();
+            // throw new SOPGPException.UnsupportedOption();
         }
         return this;
     }
@@ -62,7 +62,7 @@ public class DecryptImpl implements Decrypt {
         try {
             consumerOptions.verifyNotAfter(timestamp);
         } catch (NotYetImplementedException e) {
-            throw new SOPGPException.UnsupportedOption();
+            // throw new SOPGPException.UnsupportedOption();
         }
         return this;
     }
