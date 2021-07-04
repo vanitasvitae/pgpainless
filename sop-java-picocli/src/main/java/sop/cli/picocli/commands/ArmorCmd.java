@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Paul Schaub.
+ * Copyright 2021 Paul Schaub.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.io.IOException;
 
 import picocli.CommandLine;
 import sop.Ready;
+import sop.cli.picocli.Print;
 import sop.cli.picocli.SopCLI;
 import sop.enums.ArmorLabel;
 import sop.exception.SOPGPException;
@@ -38,11 +39,20 @@ public class ArmorCmd implements Runnable {
     @Override
     public void run() {
         Armor armor = SopCLI.getSop().armor();
+        if (allowNested) {
+            try {
+                armor.allowNested();
+            } catch (SOPGPException.UnsupportedOption unsupportedOption) {
+                Print.errln("Option --allow-nested is not supported.");
+                Print.trace(unsupportedOption);
+                System.exit(unsupportedOption.getExitCode());
+            }
+        }
         if (label != null) {
             try {
                 armor.label(label);
             } catch (SOPGPException.UnsupportedOption unsupportedOption) {
-                System.err.println("Armor labels not supported.");
+                Print.errln("Armor labels not supported.");
                 System.exit(unsupportedOption.getExitCode());
                 return;
             }
@@ -52,12 +62,12 @@ public class ArmorCmd implements Runnable {
             Ready ready = armor.data(System.in);
             ready.writeTo(System.out);
         } catch (SOPGPException.BadData badData) {
-            System.err.println("Bad data.");
-            badData.printStackTrace();
+            Print.errln("Bad data.");
+            Print.trace(badData);
             System.exit(badData.getExitCode());
         } catch (IOException e) {
-            System.err.println("IO Error.");
-            e.printStackTrace();
+            Print.errln("IO Error.");
+            Print.trace(e);
             System.exit(1);
         }
     }

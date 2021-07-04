@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Paul Schaub.
+ * Copyright 2021 Paul Schaub.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package sop.cli.picocli.commands;
-
-import picocli.CommandLine;
-import sop.cli.picocli.Print;
-import sop.cli.picocli.SopCLI;
-import sop.operation.Version;
-
-@CommandLine.Command(name = "version", description = "Display version information about the tool",
-        exitCodeOnInvalidInput = 37)
-public class VersionCmd implements Runnable {
-
-    @Override
-    public void run() {
-        Version version = SopCLI.getSop().version();
-
-        Print.outln(version.getName() + " " + version.getVersion());
-    }
-}
+/**
+ * Implementation of the Stateless OpenPGP Command Line Interface using Picocli.
+ */
+package sop.cli.picocli;

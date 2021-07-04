@@ -22,7 +22,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,6 +32,7 @@ import sop.DecryptionResult;
 import sop.ReadyWithResult;
 import sop.SessionKey;
 import sop.cli.picocli.DateParser;
+import sop.cli.picocli.Print;
 import sop.cli.picocli.SopCLI;
 import sop.exception.SOPGPException;
 import sop.operation.Decrypt;
@@ -110,14 +110,14 @@ public class DecryptCmd implements Runnable {
             DecryptionResult result = ready.writeTo(System.out);
             if (sessionKeyOut != null) {
                 if (sessionKeyOut.exists()) {
-                    System.err.println("File " + sessionKeyOut.getAbsolutePath() + " already exists.");
-                    new SOPGPException.OutputExists().printStackTrace();
+                    Print.errln("File " + sessionKeyOut.getAbsolutePath() + " already exists.");
+                    Print.trace(new SOPGPException.OutputExists());
                     System.exit(1);
                 }
 
                 try (FileOutputStream outputStream = new FileOutputStream(sessionKeyOut)) {
                     if (!result.getSessionKey().isPresent()) {
-                        System.err.println("Session key not extracted. Possibly the feature is not supported.");
+                        Print.errln("Session key not extracted. Possibly the feature is not supported.");
                         System.exit(SOPGPException.UnsupportedOption.EXIT_CODE);
                     } else {
                         SessionKey sessionKey = result.getSessionKey().get();
@@ -127,20 +127,20 @@ public class DecryptCmd implements Runnable {
                 }
             }
         } catch (SOPGPException.BadData badData) {
-            System.err.println("No valid OpenPGP message found on Standard Input.");
-            badData.printStackTrace();
+            Print.errln("No valid OpenPGP message found on Standard Input.");
+            Print.trace(badData);
             System.exit(badData.getExitCode());
         } catch (SOPGPException.MissingArg missingArg) {
-            System.err.println("Missing arguments.");
-            missingArg.printStackTrace();
+            Print.errln("Missing arguments.");
+            Print.trace(missingArg);
             System.exit(missingArg.getExitCode());
         } catch (IOException e) {
-            System.err.println("IO Error.");
-            e.printStackTrace();
+            Print.errln("IO Error.");
+            Print.trace(e);
             System.exit(1);
         } catch (SOPGPException.NoSignature noSignature) {
-            System.err.println("No verifiable signature found.");
-            noSignature.printStackTrace();
+            Print.errln("No verifiable signature found.");
+            Print.trace(noSignature);
             System.exit(noSignature.getExitCode());
         }
     }
@@ -150,24 +150,24 @@ public class DecryptCmd implements Runnable {
             try (FileInputStream keyIn = new FileInputStream(key)) {
                 decrypt.withKey(keyIn);
             } catch (SOPGPException.KeyIsProtected keyIsProtected) {
-                System.err.println("Key in file " + key.getAbsolutePath() + " is password protected.");
-                keyIsProtected.printStackTrace();
+                Print.errln("Key in file " + key.getAbsolutePath() + " is password protected.");
+                Print.trace(keyIsProtected);
                 System.exit(1);
             } catch (SOPGPException.UnsupportedAsymmetricAlgo unsupportedAsymmetricAlgo) {
-                System.err.println("Key uses unsupported asymmetric algorithm.");
-                unsupportedAsymmetricAlgo.printStackTrace();
+                Print.errln("Key uses unsupported asymmetric algorithm.");
+                Print.trace(unsupportedAsymmetricAlgo);
                 System.exit(unsupportedAsymmetricAlgo.getExitCode());
             } catch (SOPGPException.BadData badData) {
-                System.err.println("File " + key.getAbsolutePath() + " does not contain a private key.");
-                badData.printStackTrace();
+                Print.errln("File " + key.getAbsolutePath() + " does not contain a private key.");
+                Print.trace(badData);
                 System.exit(badData.getExitCode());
             } catch (FileNotFoundException e) {
-                System.err.println("File " + key.getAbsolutePath() + " does not exist.");
-                e.printStackTrace();
+                Print.errln("File " + key.getAbsolutePath() + " does not exist.");
+                Print.trace(e);
                 System.exit(1);
             } catch (IOException e) {
-                System.err.println("IO Error.");
-                e.printStackTrace();
+                Print.errln("IO Error.");
+                Print.trace(e);
                 System.exit(1);
             }
         }
@@ -178,16 +178,16 @@ public class DecryptCmd implements Runnable {
             try (FileInputStream certIn = new FileInputStream(cert)) {
                 decrypt.verifyWithCert(certIn);
             } catch (FileNotFoundException e) {
-                System.err.println("File " + cert.getAbsolutePath() + " does not exist.");
-                e.printStackTrace();
+                Print.errln("File " + cert.getAbsolutePath() + " does not exist.");
+                Print.trace(e);
                 System.exit(1);
             } catch (IOException e) {
-                System.err.println("IO Error.");
-                e.printStackTrace();
+                Print.errln("IO Error.");
+                Print.trace(e);
                 System.exit(1);
             } catch (SOPGPException.BadData badData) {
-                System.err.println("File " + cert.getAbsolutePath() + " does not contain a valid certificate.");
-                badData.printStackTrace();
+                Print.errln("File " + cert.getAbsolutePath() + " does not contain a valid certificate.");
+                Print.trace(badData);
                 System.exit(badData.getExitCode());
             }
         }
@@ -200,7 +200,7 @@ public class DecryptCmd implements Runnable {
 
         if (verifyOut.exists()) {
             if (!verifyOut.delete()) {
-                System.err.println("Cannot delete existing verification file" + verifyOut.getAbsolutePath());
+                Print.errln("Cannot delete existing verification file" + verifyOut.getAbsolutePath());
                 System.exit(1);
             }
         }
@@ -211,7 +211,7 @@ public class DecryptCmd implements Runnable {
             return;
         }
 
-        System.err.println("Unsupported option '--session-key-out'.");
+        Print.errln("Unsupported option '--session-key-out'.");
         System.exit(SOPGPException.UnsupportedOption.EXIT_CODE);
     }
 
@@ -225,8 +225,8 @@ public class DecryptCmd implements Runnable {
             try {
                 decrypt.withSessionKey(new SessionKey(algorithm, key));
             } catch (SOPGPException.UnsupportedOption unsupportedOption) {
-                System.err.println("Unsupported option '--with-session-key'.");
-                unsupportedOption.printStackTrace();
+                Print.errln("Unsupported option '--with-session-key'.");
+                Print.trace(unsupportedOption);
                 System.exit(unsupportedOption.getExitCode());
                 return;
             }
@@ -238,12 +238,12 @@ public class DecryptCmd implements Runnable {
             try {
                 decrypt.withPassword(password);
             } catch (SOPGPException.PasswordNotHumanReadable passwordNotHumanReadable) {
-                System.err.println("Password not human readable.");
-                passwordNotHumanReadable.printStackTrace();
+                Print.errln("Password not human readable.");
+                Print.trace(passwordNotHumanReadable);
                 System.exit(passwordNotHumanReadable.getExitCode());
             } catch (SOPGPException.UnsupportedOption unsupportedOption) {
-                System.err.println("Unsupported option '--with-password'.");
-                unsupportedOption.printStackTrace();
+                Print.errln("Unsupported option '--with-password'.");
+                Print.trace(unsupportedOption);
                 System.exit(unsupportedOption.getExitCode());
             }
         }
@@ -258,8 +258,8 @@ public class DecryptCmd implements Runnable {
         try {
             decrypt.verifyNotAfter(notAfterDate);
         } catch (SOPGPException.UnsupportedOption unsupportedOption) {
-            System.err.println("Option '--not-after' not supported.");
-            unsupportedOption.printStackTrace();
+            Print.errln("Option '--not-after' not supported.");
+            Print.trace(unsupportedOption);
             // System.exit(unsupportedOption.getExitCode());
         }
     }
@@ -273,8 +273,8 @@ public class DecryptCmd implements Runnable {
         try {
             decrypt.verifyNotBefore(notBeforeDate);
         } catch (SOPGPException.UnsupportedOption unsupportedOption) {
-            System.err.println("Option '--not-before' not supported.");
-            unsupportedOption.printStackTrace();
+            Print.errln("Option '--not-before' not supported.");
+            Print.trace(unsupportedOption);
             // System.exit(unsupportedOption.getExitCode());
         }
     }

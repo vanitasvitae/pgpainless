@@ -24,6 +24,7 @@ import java.util.List;
 
 import picocli.CommandLine;
 import sop.Ready;
+import sop.cli.picocli.Print;
 import sop.cli.picocli.SopCLI;
 import sop.enums.SignAs;
 import sop.exception.SOPGPException;
@@ -57,17 +58,17 @@ public class SignCmd implements Runnable {
             try (FileInputStream keyIn = new FileInputStream(keyFile)) {
                 sign.key(keyIn);
             } catch (FileNotFoundException e) {
-                System.err.println("File " + keyFile.getAbsolutePath() + " does not exist.");
-                e.printStackTrace();
+                Print.errln("File " + keyFile.getAbsolutePath() + " does not exist.");
+                Print.trace(e);
             } catch (IOException e) {
-                System.err.println("Cannot access file " + keyFile.getAbsolutePath());
-                e.printStackTrace();
+                Print.errln("Cannot access file " + keyFile.getAbsolutePath());
+                Print.trace(e);
             } catch (SOPGPException.KeyIsProtected e) {
-                System.err.println("Key " + keyFile.getName() + " is password protected.");
-                e.printStackTrace();
+                Print.errln("Key " + keyFile.getName() + " is password protected.");
+                Print.trace(e);
             } catch (SOPGPException.BadData badData) {
-                System.err.println("Bad data in key file " + keyFile.getAbsolutePath() + ":");
-                badData.printStackTrace();
+                Print.errln("Bad data in key file " + keyFile.getAbsolutePath() + ":");
+                Print.trace(badData);
             }
         }
 
@@ -79,8 +80,8 @@ public class SignCmd implements Runnable {
             Ready ready = sign.data(System.in);
             ready.writeTo(System.out);
         } catch (IOException e) {
-            System.err.println("IO Error.");
-            e.printStackTrace();
+            Print.errln("IO Error.");
+            Print.trace(e);
             System.exit(1);
         }
     }

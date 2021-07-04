@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Paul Schaub.
+ * Copyright 2021 Paul Schaub.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package sop.cli.picocli.commands;
+package sop.cli.picocli;
 
-import picocli.CommandLine;
-import sop.cli.picocli.Print;
-import sop.cli.picocli.SopCLI;
-import sop.operation.Version;
+public class Print {
 
-@CommandLine.Command(name = "version", description = "Display version information about the tool",
-        exitCodeOnInvalidInput = 37)
-public class VersionCmd implements Runnable {
+    public static void errln(String string) {
+        // CHECKSTYLE:OFF
+        System.err.println(string);
+        // CHECKSTYLE:ON
+    }
 
-    @Override
-    public void run() {
-        Version version = SopCLI.getSop().version();
+    public static void trace(Throwable e) {
+        // CHECKSTYLE:OFF
+        e.printStackTrace();
+        // CHECKSTYLE:ON
+    }
 
-        Print.outln(version.getName() + " " + version.getVersion());
+    public static void outln(String string) {
+        // CHECKSTYLE:OFF
+        System.out.println(string);
+        // CHECKSTYLE:ON
     }
 }

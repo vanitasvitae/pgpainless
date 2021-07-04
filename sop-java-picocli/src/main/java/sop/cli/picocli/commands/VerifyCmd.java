@@ -26,6 +26,7 @@ import picocli.CommandLine;
 import sop.Result;
 import sop.Verification;
 import sop.cli.picocli.DateParser;
+import sop.cli.picocli.Print;
 import sop.cli.picocli.SopCLI;
 import sop.exception.SOPGPException;
 import sop.operation.Verify;
@@ -68,8 +69,8 @@ public class VerifyCmd implements Runnable {
             try {
                 verify.notAfter(DateParser.parseNotAfter(notAfter));
             } catch (SOPGPException.UnsupportedOption unsupportedOption) {
-                System.err.println("Unsupported option '--not-after'.");
-                unsupportedOption.printStackTrace();
+                Print.errln("Unsupported option '--not-after'.");
+                Print.trace(unsupportedOption);
                 // System.exit(unsupportedOption.getExitCode());
             }
         }
@@ -77,8 +78,8 @@ public class VerifyCmd implements Runnable {
             try {
                 verify.notBefore(DateParser.parseNotBefore(notBefore));
             } catch (SOPGPException.UnsupportedOption unsupportedOption) {
-                System.err.println("Unsupported option '--not-before'.");
-                unsupportedOption.printStackTrace();
+                Print.errln("Unsupported option '--not-before'.");
+                Print.trace(unsupportedOption);
                 // System.exit(unsupportedOption.getExitCode());
             }
         }
@@ -87,16 +88,17 @@ public class VerifyCmd implements Runnable {
             try (FileInputStream certIn = new FileInputStream(certFile)) {
                 verify.cert(certIn);
             } catch (FileNotFoundException fileNotFoundException) {
-                System.err.println("Certificate file " + certFile.getAbsolutePath() + " not found.");
-                fileNotFoundException.printStackTrace();
+                Print.errln("Certificate file " + certFile.getAbsolutePath() + " not found.");
+
+                Print.trace(fileNotFoundException);
                 System.exit(1);
             } catch (IOException ioException) {
-                System.err.println("IO Error.");
-                ioException.printStackTrace();
+                Print.errln("IO Error.");
+                Print.trace(ioException);
                 System.exit(1);
             } catch (SOPGPException.BadData badData) {
-                System.err.println("Certificate file " + certFile.getAbsolutePath() + " appears to not contain a valid OpenPGP certificate.");
-                badData.printStackTrace();
+                Print.errln("Certificate file " + certFile.getAbsolutePath() + " appears to not contain a valid OpenPGP certificate.");
+                Print.trace(badData);
                 System.exit(badData.getExitCode());
             }
         }
@@ -105,13 +107,16 @@ public class VerifyCmd implements Runnable {
             try (FileInputStream sigIn = new FileInputStream(signature)) {
                 verify.signatures(sigIn);
             } catch (FileNotFoundException e) {
-                System.err.println("Signature");
-                e.printStackTrace();
+                Print.errln("Signature file " + signature.getAbsolutePath() + " does not exist.");
+                Print.trace(e);
+                System.exit(1);
             } catch (IOException e) {
-                e.printStackTrace();
+                Print.errln("IO Error.");
+                Print.trace(e);
+                System.exit(1);
             } catch (SOPGPException.BadData badData) {
-                System.err.println("File " + signature.getAbsolutePath() + " does not contain a valid OpenPGP signature.");
-                badData.printStackTrace();
+                Print.errln("File " + signature.getAbsolutePath() + " does not contain a valid OpenPGP signature.");
+                Print.trace(badData);
                 System.exit(badData.getExitCode());
             }
         }
@@ -120,16 +125,20 @@ public class VerifyCmd implements Runnable {
         try {
             verifications = verify.data(System.in);
         } catch (SOPGPException.NoSignature e) {
-            System.err.println("No verifiable signature found.");
-            e.printStackTrace();
+            Print.errln("No verifiable signature found.");
+            Print.trace(e);
             System.exit(e.getExitCode());
         } catch (IOException ioException) {
-            System.err.println("IO Error.");
-            ioException.printStackTrace();
+            Print.errln("IO Error.");
+            Print.trace(ioException);
             System.exit(1);
+        } catch (SOPGPException.BadData badData) {
+            Print.errln("Standard Input appears not to contain a valid OpenPGP message.");
+            Print.trace(badData);
+            System.exit(badData.getExitCode());
         }
         for (Verification verification : verifications.get()) {
-            System.out.println(verification.toString());
+            Print.outln(verification.toString());
         }
     }
 }

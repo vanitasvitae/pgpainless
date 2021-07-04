@@ -21,6 +21,7 @@ import java.util.List;
 
 import picocli.CommandLine;
 import sop.Ready;
+import sop.cli.picocli.Print;
 import sop.cli.picocli.SopCLI;
 import sop.exception.SOPGPException;
 import sop.operation.GenerateKey;
@@ -53,16 +54,16 @@ public class GenerateKeyCmd implements Runnable {
             Ready ready = generateKey.generate();
             ready.writeTo(System.out);
         } catch (SOPGPException.MissingArg missingArg) {
-            System.err.println("Missing argument.");
-            missingArg.printStackTrace();
+            Print.errln("Missing argument.");
+            Print.trace(missingArg);
             System.exit(missingArg.getExitCode());
         } catch (SOPGPException.UnsupportedAsymmetricAlgo unsupportedAsymmetricAlgo) {
-            System.err.println("Unsupported asymmetric algorithm.");
-            unsupportedAsymmetricAlgo.printStackTrace();
+            Print.errln("Unsupported asymmetric algorithm.");
+            Print.trace(unsupportedAsymmetricAlgo);
             System.exit(unsupportedAsymmetricAlgo.getExitCode());
         } catch (IOException e) {
-            System.err.println("IO Error.");
-            e.printStackTrace();
+            Print.errln("IO Error.");
+            Print.trace(e);
             System.exit(1);
         }
     }

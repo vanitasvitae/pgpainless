@@ -19,6 +19,7 @@ import java.io.IOException;
 
 import picocli.CommandLine;
 import sop.Ready;
+import sop.cli.picocli.Print;
 import sop.cli.picocli.SopCLI;
 import sop.exception.SOPGPException;
 import sop.operation.ExtractCert;
@@ -44,12 +45,12 @@ public class ExtractCertCmd implements Runnable {
             Ready ready = extractCert.key(System.in);
             ready.writeTo(System.out);
         } catch (IOException e) {
-            System.err.println("IO Error.");
-            e.printStackTrace();
+            Print.errln("IO Error.");
+            Print.trace(e);
             System.exit(1);
         } catch (SOPGPException.BadData badData) {
-            System.err.println("Standard Input does not contain valid OpenPGP private key material.");
-            badData.printStackTrace();
+            Print.errln("Standard Input does not contain valid OpenPGP private key material.");
+            Print.trace(badData);
             System.exit(badData.getExitCode());
         }
     }

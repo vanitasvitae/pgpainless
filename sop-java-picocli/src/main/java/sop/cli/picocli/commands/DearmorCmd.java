@@ -18,6 +18,7 @@ package sop.cli.picocli.commands;
 import java.io.IOException;
 
 import picocli.CommandLine;
+import sop.cli.picocli.Print;
 import sop.cli.picocli.SopCLI;
 import sop.exception.SOPGPException;
 
@@ -34,8 +35,8 @@ public class DearmorCmd implements Runnable {
                     .data(System.in)
                     .writeTo(System.out);
         } catch (IOException e) {
-            System.err.println("IO Error.");
-            e.printStackTrace();
+            Print.errln("IO Error.");
+            Print.trace(e);
             System.exit(1);
         }
     }
