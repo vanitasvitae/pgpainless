@@ -16,7 +16,6 @@
 package org.pgpainless.cli;
 
 import org.junit.jupiter.api.Test;
-import picocli.CommandLine;
 
 public class DummyTest {
 

@@ -18,7 +18,6 @@ package org.pgpainless.cli;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
-import picocli.CommandLine;
 
 public class ExitCodeTest {
 

@@ -40,12 +40,11 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.pgpainless.PGPainless;
+import org.pgpainless.cli.PGPainlessCLI;
+import org.pgpainless.cli.TestUtils;
 import org.pgpainless.key.OpenPgpV4Fingerprint;
 import org.pgpainless.key.info.KeyRingInfo;
 import org.pgpainless.key.util.KeyRingUtils;
-import org.pgpainless.cli.PGPainlessCLI;
-import org.pgpainless.cli.TestUtils;
-import picocli.CommandLine;
 
 public class SignVerifyTest {
 
@@ -113,8 +112,8 @@ public class SignVerifyTest {
         String[] split = verification.split(" ");
         OpenPgpV4Fingerprint primaryKeyFingerprint = new OpenPgpV4Fingerprint(aliceKeys);
         OpenPgpV4Fingerprint signingKeyFingerprint = new OpenPgpV4Fingerprint(new KeyRingInfo(alicePub, new Date()).getSigningSubkeys().get(0));
-        assertEquals(signingKeyFingerprint.toString(), split[1]);
-        assertEquals(primaryKeyFingerprint.toString(), split[2]);
+        assertEquals(signingKeyFingerprint.toString(), split[1].trim());
+        assertEquals(primaryKeyFingerprint.toString(), split[2].trim());
 
         System.setIn(originalIn);
     }
