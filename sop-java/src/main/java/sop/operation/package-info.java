@@ -13,17 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+/**
+ * Stateless OpenPGP Interface for Java.
+ * Different cryptographic operations.
+ */
 package sop.operation;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-
-import sop.Result;
-import sop.Verification;
-import sop.exception.SOPGPException;
-
-public interface VerifySignatures {
-
-    Result<List<Verification>> data(InputStream data) throws IOException, SOPGPException.NoSignature, SOPGPException.BadData;
-}
