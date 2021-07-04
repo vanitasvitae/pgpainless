@@ -76,9 +76,11 @@ public class ArmorUtils {
 
     public static ArmoredOutputStream toAsciiArmoredStream(OutputStream outputStream, MultiMap<String, String> header) {
         ArmoredOutputStream armoredOutputStream = ArmoredOutputStreamFactory.get(outputStream);
-        for (String headerKey : header.keySet()) {
-            for (String headerValue : header.get(headerKey)) {
-                armoredOutputStream.addHeader(headerKey, headerValue);
+        if (header != null) {
+            for (String headerKey : header.keySet()) {
+                for (String headerValue : header.get(headerKey)) {
+                    armoredOutputStream.addHeader(headerKey, headerValue);
+                }
             }
         }
         return armoredOutputStream;
