@@ -33,6 +33,7 @@ import org.pgpainless.decryption_verification.ConsumerOptions;
 import org.pgpainless.decryption_verification.DecryptionStream;
 import org.pgpainless.decryption_verification.OpenPgpMetadata;
 import org.pgpainless.exception.NotYetImplementedException;
+import org.pgpainless.key.SubkeyIdentifier;
 import org.pgpainless.key.info.KeyRingInfo;
 import org.pgpainless.key.protection.SecretKeyRingProtector;
 import org.pgpainless.util.Passphrase;
@@ -158,6 +159,11 @@ public class DecryptImpl implements Decrypt {
                         throw new SOPGPException.NoSignature();
                     }
                 }
+
+                List<Verification> verificationList = new ArrayList<>();
+                for (SubkeyIdentifier verifiedSigningKey : metadata.get)
+
+                return new DecryptionResult(null, );
                 // TODO: Extract verifications from metadata.
                 return new DecryptionResult(null, Collections.emptyList());
             }
