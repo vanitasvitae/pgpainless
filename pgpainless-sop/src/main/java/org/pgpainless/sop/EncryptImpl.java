@@ -25,6 +25,7 @@ import org.bouncycastle.openpgp.PGPSecretKeyRingCollection;
 import org.bouncycastle.util.io.Streams;
 import org.pgpainless.PGPainless;
 import org.pgpainless.algorithm.DocumentSignatureType;
+import org.pgpainless.algorithm.StreamEncoding;
 import org.pgpainless.encryption_signing.EncryptionOptions;
 import org.pgpainless.encryption_signing.EncryptionStream;
 import org.pgpainless.encryption_signing.ProducerOptions;
@@ -43,6 +44,7 @@ public class EncryptImpl implements Encrypt {
     EncryptionOptions encryptionOptions = new EncryptionOptions();
     SigningOptions signingOptions = null;
 
+    private EncryptAs encryptAs = EncryptAs.Binary;
     boolean armor = true;
 
     @Override
@@ -53,8 +55,7 @@ public class EncryptImpl implements Encrypt {
 
     @Override
     public Encrypt mode(EncryptAs mode) throws SOPGPException.UnsupportedOption {
-        // TODO: Move EncryptAs to ProducerOptions
-        // throw new SOPGPException.UnsupportedOption();
+        this.encryptAs = mode;
         return this;
     }
 
@@ -104,6 +105,7 @@ public class EncryptImpl implements Encrypt {
                 ProducerOptions.signAndEncrypt(encryptionOptions, signingOptions) :
                 ProducerOptions.encrypt(encryptionOptions);
         producerOptions.setAsciiArmor(armor);
+        producerOptions.setEncoding(encryptAsToStreamEncoding(encryptAs));
 
         try {
             ProxyOutputStream proxy = new ProxyOutputStream();
@@ -122,5 +124,17 @@ public class EncryptImpl implements Encrypt {
         } catch (PGPException e) {
             throw new IOException();
         }
+    }
+
+    private static StreamEncoding encryptAsToStreamEncoding(EncryptAs encryptAs) {
+        switch (encryptAs) {
+            case Binary:
+                return StreamEncoding.BINARY;
+            case Text:
+                return StreamEncoding.TEXT;
+            case MIME:
+                return StreamEncoding.UTF8;
+        }
+        throw new IllegalArgumentException("Invalid value encountered: " + encryptAs);
     }
 }
