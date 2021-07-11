@@ -15,14 +15,28 @@
  */
 package sop.cli.picocli;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
 
+import com.ginsberg.junit.exit.ExpectSystemExitWithStatus;
 import org.junit.jupiter.api.Test;
+import sop.SOP;
 
-public class DummyTest {
+public class SOPTest {
 
     @Test
-    public void dummyTest() {
-        assertNotNull("Hello, World!");
+    @ExpectSystemExitWithStatus(69)
+    public void assertExitOnInvalidSubcommand() {
+        SOP sop = mock(SOP.class);
+        SopCLI.setSopInstance(sop);
+
+        SopCLI.main(new String[] {"invalid"});
+    }
+
+    @Test
+    @ExpectSystemExitWithStatus(1)
+    public void assertThrowsIfNoSOPBackendSet() {
+        SopCLI.assureSOPInstanceIsNull();
+        // At this point, no SOP backend is set, so an InvalidStateException triggers exit(1)
+        SopCLI.main(new String[] {"armor"});
     }
 }

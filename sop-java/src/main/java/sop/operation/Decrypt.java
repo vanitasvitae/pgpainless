@@ -90,5 +90,5 @@ public interface Decrypt {
      * @return ready with result
      */
     ReadyWithResult<DecryptionResult> ciphertext(InputStream ciphertext)
-            throws SOPGPException.BadData, SOPGPException.MissingArg;
+            throws SOPGPException.BadData, SOPGPException.MissingArg, SOPGPException.CannotDecrypt;
 }

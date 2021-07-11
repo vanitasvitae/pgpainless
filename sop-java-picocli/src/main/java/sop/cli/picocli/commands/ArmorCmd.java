@@ -54,7 +54,6 @@ public class ArmorCmd implements Runnable {
             } catch (SOPGPException.UnsupportedOption unsupportedOption) {
                 Print.errln("Armor labels not supported.");
                 System.exit(unsupportedOption.getExitCode());
-                return;
             }
         }
 

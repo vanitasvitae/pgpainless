@@ -26,8 +26,8 @@ public class DateParser {
     private static final TimeZone tz = TimeZone.getTimeZone("UTC");
     private static final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
 
-    private static final Date beginningOfTime = new Date(0);
-    private static final Date endOfTime = new Date(8640000000000000L);
+    public static final Date BEGINNING_OF_TIME = new Date(0);
+    public static final Date END_OF_TIME = new Date(8640000000000000L);
 
     static {
         df.setTimeZone(tz);
@@ -35,7 +35,7 @@ public class DateParser {
 
     public static Date parseNotAfter(String notAfter) {
         try {
-            return notAfter.equals("now") ? new Date() : notAfter.equals("-") ? endOfTime : df.parse(notAfter);
+            return notAfter.equals("now") ? new Date() : notAfter.equals("-") ? END_OF_TIME : df.parse(notAfter);
         } catch (ParseException e) {
             Print.errln("Invalid date string supplied as value of --not-after.");
             Print.trace(e);
@@ -46,7 +46,7 @@ public class DateParser {
 
     public static Date parseNotBefore(String notBefore) {
         try {
-            return notBefore.equals("now") ? new Date() : notBefore.equals("-") ? beginningOfTime : df.parse(notBefore);
+            return notBefore.equals("now") ? new Date() : notBefore.equals("-") ? BEGINNING_OF_TIME : df.parse(notBefore);
         } catch (ParseException e) {
             Print.errln("Invalid date string supplied as value of --not-before.");
             Print.trace(e);

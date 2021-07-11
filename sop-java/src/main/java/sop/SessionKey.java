@@ -15,6 +15,10 @@
  */
 package sop;
 
+import java.util.Arrays;
+
+import sop.util.HexUtil;
+
 public class SessionKey {
 
     private final byte algorithm;
@@ -43,4 +47,29 @@ public class SessionKey {
         return sessionKey;
     }
 
+    @Override
+    public int hashCode() {
+        return getAlgorithm() * 17 + Arrays.hashCode(getKey());
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) {
+            return false;
+        }
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof SessionKey)) {
+            return false;
+        }
+
+        SessionKey otherKey = (SessionKey) other;
+        return getAlgorithm() == otherKey.getAlgorithm() && Arrays.equals(getKey(), otherKey.getKey());
+    }
+
+    @Override
+    public String toString() {
+        return "" + (int) getAlgorithm() + ':' + HexUtil.bytesToHex(sessionKey);
+    }
 }

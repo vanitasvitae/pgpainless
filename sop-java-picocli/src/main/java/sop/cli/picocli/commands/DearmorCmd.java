@@ -34,6 +34,10 @@ public class DearmorCmd implements Runnable {
                     .dearmor()
                     .data(System.in)
                     .writeTo(System.out);
+        } catch (SOPGPException.BadData e) {
+            Print.errln("Bad data.");
+            Print.trace(e);
+            System.exit(e.getExitCode());
         } catch (IOException e) {
             Print.errln("IO Error.");
             Print.trace(e);

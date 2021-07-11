@@ -27,7 +27,8 @@ import sop.cli.picocli.commands.SignCmd;
 import sop.cli.picocli.commands.VerifyCmd;
 import sop.cli.picocli.commands.VersionCmd;
 
-@CommandLine.Command(exitCodeOnInvalidInput = 69,
+@CommandLine.Command(
+        exitCodeOnInvalidInput = 69,
         subcommands = {
                 ArmorCmd.class,
                 DearmorCmd.class,
@@ -42,7 +43,14 @@ import sop.cli.picocli.commands.VersionCmd;
 )
 public class SopCLI {
 
-    public static SOP SOP_INSTANCE;
+    static SOP SOP_INSTANCE;
+
+    public static void main(String[] args) {
+        int exitCode = execute(args);
+        if (exitCode != 0) {
+            System.exit(exitCode);
+        }
+    }
 
     public static int execute(String[] args) {
         return new CommandLine(SopCLI.class).execute(args);
@@ -57,5 +65,9 @@ public class SopCLI {
 
     public static void setSopInstance(SOP instance) {
         SOP_INSTANCE = instance;
+    }
+
+    static void assureSOPInstanceIsNull() {
+        SOP_INSTANCE = null;
     }
 }

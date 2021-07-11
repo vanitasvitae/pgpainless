@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import sop.Ready;
+import sop.exception.SOPGPException;
 
 public interface Dearmor {
 
@@ -28,5 +29,5 @@ public interface Dearmor {
      * @param data armored OpenPGP data
      * @return input stream of unarmored data
      */
-    Ready data(InputStream data) throws IOException;
+    Ready data(InputStream data) throws SOPGPException.BadData, IOException;
 }
