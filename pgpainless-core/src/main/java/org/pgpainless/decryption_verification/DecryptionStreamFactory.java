@@ -16,6 +16,7 @@
 package org.pgpainless.decryption_verification;
 
 import java.io.BufferedInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -109,13 +110,23 @@ public final class DecryptionStreamFactory {
         try {
             // Parse OpenPGP message
             inputStream = factory.processPGPPackets(objectFactory, 1);
-        } catch (MissingLiteralDataException | IOException e) {
-            // MissingLiteralDataException: Not an OpenPGP message.
+        } catch (EOFException e) {
+            throw e;
+        }
+        catch (MissingLiteralDataException e) {
+            // Not an OpenPGP message.
             //  Reset the buffered stream to parse the message as arbitrary binary data
             //  to allow for detached signature verification.
-            // IOException: We falsely assumed the data to be armored.
             bufferedIn.reset();
             inputStream = bufferedIn;
+        } catch (IOException e) {
+            if (e.getMessage().contains("invalid armor")) {
+                // We falsely assumed the data to be armored.
+                bufferedIn.reset();
+                inputStream = bufferedIn;
+            } else {
+                throw e;
+            }
         }
 
         return new DecryptionStream(inputStream, factory.resultBuilder, factory.integrityProtectedStreams);
