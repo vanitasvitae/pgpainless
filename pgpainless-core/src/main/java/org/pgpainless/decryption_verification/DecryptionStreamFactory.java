@@ -77,8 +77,10 @@ public final class DecryptionStreamFactory {
     private final ConsumerOptions options;
 
     private final OpenPgpMetadata.Builder resultBuilder = OpenPgpMetadata.getBuilder();
-    private static final PGPContentVerifierBuilderProvider verifierBuilderProvider = ImplementationFactory.getInstance().getPGPContentVerifierBuilderProvider();
-    private static final KeyFingerPrintCalculator keyFingerprintCalculator = ImplementationFactory.getInstance().getKeyFingerprintCalculator();
+    private static final PGPContentVerifierBuilderProvider verifierBuilderProvider =
+            ImplementationFactory.getInstance().getPGPContentVerifierBuilderProvider();
+    private static final KeyFingerPrintCalculator keyFingerprintCalculator =
+            ImplementationFactory.getInstance().getKeyFingerprintCalculator();
     private final Map<OpenPgpV4Fingerprint, OnePassSignature> verifiableOnePassSignatures = new HashMap<>();
     private final List<IntegrityProtectedInputStream> integrityProtectedStreams = new ArrayList<>();
 
@@ -159,7 +161,9 @@ public final class DecryptionStreamFactory {
             throws PGPException, IOException {
         LOGGER.log(LEVEL, "Encountered PGPEncryptedDataList");
         InputStream decryptedDataStream = decrypt(pgpEncryptedDataList);
-        return processPGPPackets(new PGPObjectFactory(PGPUtil.getDecoderStream(decryptedDataStream), keyFingerprintCalculator), ++depth);
+        InputStream decodedDataStream = PGPUtil.getDecoderStream(decryptedDataStream);
+        PGPObjectFactory factory = new PGPObjectFactory(decodedDataStream, keyFingerprintCalculator);
+        return processPGPPackets(factory, ++depth);
     }
 
     private InputStream processPGPCompressedData(PGPCompressedData pgpCompressedData, int depth)
@@ -168,8 +172,9 @@ public final class DecryptionStreamFactory {
         LOGGER.log(LEVEL, "Encountered PGPCompressedData: " + compressionAlgorithm);
         resultBuilder.setCompressionAlgorithm(compressionAlgorithm);
 
-        InputStream dataStream = pgpCompressedData.getDataStream();
-        PGPObjectFactory objectFactory = new PGPObjectFactory(PGPUtil.getDecoderStream(dataStream), keyFingerprintCalculator);
+        InputStream inflatedDataStream = pgpCompressedData.getDataStream();
+        InputStream decodedDataStream = PGPUtil.getDecoderStream(inflatedDataStream);
+        PGPObjectFactory objectFactory = new PGPObjectFactory(decodedDataStream, keyFingerprintCalculator);
 
         return processPGPPackets(objectFactory, ++depth);
     }
