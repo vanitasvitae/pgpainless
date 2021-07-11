@@ -33,7 +33,6 @@ import org.bouncycastle.openpgp.operator.PGPDataEncryptorBuilder;
 import org.bouncycastle.openpgp.operator.PGPKeyEncryptionMethodGenerator;
 import org.pgpainless.algorithm.CompressionAlgorithm;
 import org.pgpainless.algorithm.SymmetricKeyAlgorithm;
-import org.pgpainless.decryption_verification.OpenPgpMetadata;
 import org.pgpainless.implementation.ImplementationFactory;
 import org.pgpainless.key.SubkeyIdentifier;
 import org.pgpainless.util.ArmoredOutputStreamFactory;
@@ -154,8 +153,9 @@ public final class EncryptionStream extends OutputStream {
                 new byte[BUFFER_SIZE]);
         outermostStream = literalDataStream;
 
-        resultBuilder.setFileInfo(new OpenPgpMetadata.FileInfo(
-                options.getFileName(), options.getModificationDate(), options.getEncoding()));
+        resultBuilder.setFileName(options.getFileName())
+                .setModificationDate(options.getModificationDate())
+                .setFileEncoding(options.getEncoding());
     }
 
     @Override

@@ -189,11 +189,10 @@ public final class DecryptionStreamFactory {
     private InputStream processPGPLiteralData(@Nonnull PGPObjectFactory objectFactory, PGPLiteralData pgpLiteralData) {
         LOGGER.log(LEVEL, "Found PGPLiteralData");
         InputStream literalDataInputStream = pgpLiteralData.getInputStream();
-        OpenPgpMetadata.FileInfo fileInfo = new OpenPgpMetadata.FileInfo(
-                pgpLiteralData.getFileName(),
-                pgpLiteralData.getModificationTime(),
-                StreamEncoding.fromCode(pgpLiteralData.getFormat()));
-        resultBuilder.setFileInfo(fileInfo);
+
+        resultBuilder.setFileName(pgpLiteralData.getFileName())
+                .setModificationDate(pgpLiteralData.getModificationTime())
+                .setFileEncoding(StreamEncoding.fromCode(pgpLiteralData.getFormat()));
 
         if (verifiableOnePassSignatures.isEmpty()) {
             LOGGER.log(LEVEL, "No OnePassSignatures found -> We are done");
@@ -244,9 +243,6 @@ public final class DecryptionStreamFactory {
 
             // data is public key encrypted
             else if (encryptedData instanceof PGPPublicKeyEncryptedData) {
-                if (options.getDecryptionKeys().isEmpty()) {
-
-                }
                 PGPPublicKeyEncryptedData publicKeyEncryptedData = (PGPPublicKeyEncryptedData) encryptedData;
                 long keyId = publicKeyEncryptedData.getKeyID();
                 if (!options.getDecryptionKeys().isEmpty()) {
