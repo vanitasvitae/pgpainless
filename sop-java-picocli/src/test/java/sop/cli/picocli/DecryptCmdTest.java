@@ -304,4 +304,34 @@ public class DecryptCmdTest {
         SopCLI.main(new String[] {"decrypt",
                 "--with-session-key", "C7CBDAF42537776F12509B5168793C26B93294E5ABDFA73224FB0177123E9137"});
     }
+
+    @Test
+    @ExpectSystemExitWithStatus(41)
+    public void assertBadDataInKeysResultsInExit41() throws SOPGPException.KeyIsProtected, SOPGPException.UnsupportedAsymmetricAlgo, SOPGPException.BadData, IOException {
+        when(decrypt.withKey(any())).thenThrow(new SOPGPException.BadData(new IOException()));
+        File tempKeyFile = File.createTempFile("key-", ".tmp");
+        SopCLI.main(new String[] {"decrypt", tempKeyFile.getAbsolutePath()});
+    }
+
+    @Test
+    @ExpectSystemExitWithStatus(1)
+    public void assertKeyFileNotFoundCausesExit1() {
+        SopCLI.main(new String[] {"decrypt", "nonexistent-key"});
+    }
+
+    @Test
+    @ExpectSystemExitWithStatus(1)
+    public void assertProtectedKeyCausesExit1() throws IOException, SOPGPException.KeyIsProtected, SOPGPException.UnsupportedAsymmetricAlgo, SOPGPException.BadData {
+        when(decrypt.withKey(any())).thenThrow(new SOPGPException.KeyIsProtected());
+        File tempKeyFile = File.createTempFile("key-", ".tmp");
+        SopCLI.main(new String[] {"decrypt", tempKeyFile.getAbsolutePath()});
+    }
+
+    @Test
+    @ExpectSystemExitWithStatus(13)
+    public void assertUnsupportedAlgorithmExceptionCausesExit13() throws SOPGPException.KeyIsProtected, SOPGPException.UnsupportedAsymmetricAlgo, SOPGPException.BadData, IOException {
+        when(decrypt.withKey(any())).thenThrow(new SOPGPException.UnsupportedAsymmetricAlgo(new IOException()));
+        File tempKeyFile = File.createTempFile("key-", ".tmp");
+        SopCLI.main(new String[] {"decrypt", tempKeyFile.getAbsolutePath()});
+    }
 }
